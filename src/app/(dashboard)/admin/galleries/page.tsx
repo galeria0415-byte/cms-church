@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { DeleteButton } from "@/components/ui/delete-button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { prisma } from "@/lib/prisma";
@@ -29,7 +30,10 @@ export default async function GalleriesPage() {
                   <p className="font-semibold text-[var(--ink)]">{gallery.title}</p>
                   <p className="text-sm text-[var(--muted)]">{gallery.images.length} images</p>
                 </div>
-                <Link href={`/admin/galleries/${gallery.id}/edit`} className="text-sm font-semibold text-[var(--accent)]">Edit</Link>
+                <div className="flex items-center gap-2">
+                  <Link href={`/admin/galleries/${gallery.id}/edit`} className="text-sm font-semibold text-[var(--accent)]">Edit</Link>
+                  <DeleteButton apiPath={`/api/galleries/${gallery.id}`} label="Delete" confirmMessage={`Delete gallery "${gallery.title}"? This cannot be undone.`} />
+                </div>
               </div>
             ))}
           </div>

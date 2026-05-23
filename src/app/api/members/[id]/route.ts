@@ -41,16 +41,34 @@ export async function PUT(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_: Request, { params }: Params) {
+export async function DELETE(request: Request, { params }: Params) {
   const session = await requireRole(MEMBER_MANAGER_ROLES);
 
   if (!canDeleteMember(session.user.role)) {
-    return NextResponse.json({ error: "Your role cannot archive members." }, { status: 403 });
+    return NextResponse.json({ error: "Your role cannot delete members." }, { status: 403 });
   }
 
   const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const hard = searchParams.get("hard") === "true";
 
   try {
+    if (hard) {
+      const member = await prisma.member.delete({ where: { id } });
+
+      await prisma.activityLog.create({
+        data: {
+          action: "delete",
+          entityType: "member",
+          entityId: member.id,
+          summary: `Permanently deleted member ${member.firstName} ${member.lastName}`,
+          userId: session.user.id,
+        },
+      });
+
+      return NextResponse.json({ member });
+    }
+
     const member = await prisma.member.update({
       where: { id },
       data: { isArchived: true, recordStatus: "ARCHIVED" },
@@ -70,6 +88,6 @@ export async function DELETE(_: Request, { params }: Params) {
   } catch (e: unknown) {
     const code = (e as { code?: string })?.code;
     if (code === "P2025") return NextResponse.json({ error: "Member not found." }, { status: 404 });
-    return NextResponse.json({ error: "Failed to archive member." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete member." }, { status: 500 });
   }
 }

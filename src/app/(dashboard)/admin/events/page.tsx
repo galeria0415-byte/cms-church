@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { DeleteButton } from "@/components/ui/delete-button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { prisma } from "@/lib/prisma";
@@ -30,7 +31,10 @@ export default async function EventsPage() {
                   <p className="font-semibold text-[var(--ink)]">{event.title}</p>
                   <p className="text-sm text-[var(--muted)]">{formatDate(event.eventDate)} • {event.location ?? "Location TBD"}</p>
                 </div>
-                <Link href={`/admin/events/${event.id}/edit`} className="text-sm font-semibold text-[var(--accent)]">Edit</Link>
+                <div className="flex items-center gap-2">
+                  <Link href={`/admin/events/${event.id}/edit`} className="text-sm font-semibold text-[var(--accent)]">Edit</Link>
+                  <DeleteButton apiPath={`/api/events/${event.id}`} label="Delete" confirmMessage={`Delete event "${event.title}"? This cannot be undone.`} />
+                </div>
               </div>
             ))}
           </div>

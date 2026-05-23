@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { DeleteButton } from "@/components/ui/delete-button";
 import { prisma } from "@/lib/prisma";
 import { formatDate, fullName, parseCsv } from "@/lib/utils";
 
@@ -53,6 +54,12 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
             Edit member
           </Link>
           <ArchiveButton id={member.id} />
+          <DeleteButton
+            apiPath={`/api/members/${member.id}?hard=true`}
+            label="Delete permanently"
+            confirmMessage={`Permanently delete ${fullName(member)}? This will remove all their data and cannot be undone.`}
+            redirectTo="/admin/members"
+          />
         </div>
       </section>
 
