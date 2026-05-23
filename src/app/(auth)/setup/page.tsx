@@ -32,9 +32,10 @@ export default function SetupPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: values.name, email: values.email, password: values.password }),
     });
-    const data = await res.json() as { error?: string };
+    let data: { error?: string } = {};
+    try { data = await res.json() as { error?: string }; } catch { /* empty body */ }
     if (!res.ok) {
-      setError(data.error ?? "Setup failed.");
+      setError(data.error ?? `Server error (${res.status}). Check that the database is connected.`);
       return;
     }
     router.push("/login?setup=1");
