@@ -324,7 +324,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 className={cn(
                   "flex flex-1 flex-col items-center gap-1 border-b-2 px-2 py-3 text-[11px] font-medium transition",
                   isActive
-                    ? "border-[#e05a1e] bg-gradient-to-b from-[#fef3ee] to-white text-[#c94a12]"
+                    ? "border-[#c9a455] bg-gradient-to-b from-[#fdf6e3] to-white text-[#a07830]"
                     : isDone
                       ? "cursor-pointer border-transparent text-[var(--accent)] hover:bg-[var(--sand)]"
                       : "cursor-default border-transparent text-[var(--muted)]",
@@ -344,7 +344,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
         </div>
         <div className="h-1 bg-[var(--line)]">
           <div
-            className="h-full bg-[#e05a1e] transition-all duration-300"
+            className="h-full bg-[#c9a455] transition-all duration-300"
             style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
           />
         </div>
