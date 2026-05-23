@@ -288,6 +288,7 @@ if ($changedFiles.Count -eq 0 -and $removedFiles.Count -eq 0) {
 
     Write-Host "  Packaging $($changedFiles.Count) changed file(s) into ZIP..." -ForegroundColor White
 
+    Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zipStream = [System.IO.File]::Open($tempZip, [System.IO.FileMode]::Create)
     $zip       = New-Object System.IO.Compression.ZipArchive($zipStream, [System.IO.Compression.ZipArchiveMode]::Create)
@@ -317,7 +318,7 @@ if ($changedFiles.Count -eq 0 -and $removedFiles.Count -eq 0) {
     Write-Host "  Uploading ZIP via FTP..." -ForegroundColor White
 
     $cred      = New-Object System.Net.NetworkCredential($deployUser, $deployPass)
-    $ftpZipUrl = "ftp://${deployHost}:${deployPort}/incremental.zip"
+    $ftpZipUrl = "ftp://${deployHost}:${deployPort}/public_html/incremental.zip"
 
     try {
       $ftpUp               = [System.Net.FtpWebRequest]::Create($ftpZipUrl)
@@ -340,53 +341,128 @@ if ($changedFiles.Count -eq 0 -and $removedFiles.Count -eq 0) {
 
     Write-Host "  ZIP uploaded to server FTP root." -ForegroundColor DarkGray
 
-    # ── Extract on server via cPanel UAPI ────────────────────────────────────
-    Write-Host "  Extracting files on server via cPanel API..." -ForegroundColor White
+    # ── Extract via PHP helper script ─────────────────────────────────────────
+    # cPanel UAPI Fileman::extract_file is not available on all servers.
+    # Instead we upload a one-time PHP script to public_html/, call it over HTTP,
+    # it extracts the ZIP into the app dir and self-deletes.
+    Write-Host "  Uploading PHP extractor to server..." -ForegroundColor White
 
-    $authBase64 = [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("${deployUser}:${deployPass}"))
-    $apiHeaders = @{ Authorization = "Basic $authBase64"; Accept = "application/json" }
+    $extractToken = [System.Guid]::NewGuid().ToString("N")
+    $phpFileName  = "_x$([System.Guid]::NewGuid().ToString("N").Substring(0,8)).php"
+    $phpLocalPath = Join-Path $root ".deploy\$phpFileName"
 
+    $phpContent = @"
+<?php
+if (!isset(`$_GET['t']) || `$_GET['t'] !== '$extractToken') {
+    http_response_code(403);
+    echo json_encode(['ok'=>false,'error'=>'Forbidden']);
+    exit;
+}
+`$zipPath = dirname(__FILE__).'/incremental.zip';
+`$zip = new ZipArchive;
+`$r = `$zip->open(`$zipPath);
+if (`$r === true) {
+    `$zip->extractTo('$absRemotePath');
+    `$zip->close();
+    @unlink(`$zipPath);
+    @unlink(__FILE__);
+    echo json_encode(['ok'=>true]);
+} else {
+    http_response_code(500);
+    echo json_encode(['ok'=>false,'error'=>"ZipArchive:`$r"]);
+}
+"@
+
+    # Write PHP without BOM (PS5.1 Set-Content -Encoding UTF8 adds BOM which PHP outputs)
+    [System.IO.File]::WriteAllText($phpLocalPath, $phpContent, (New-Object System.Text.UTF8Encoding $false))
+
+    $ftpPhpUrl = "ftp://${deployHost}:${deployPort}/public_html/$phpFileName"
     try {
-      $extractResult = Invoke-CpanelApi `
-        -Url "https://${deployHost}:${cpanelPort}/execute/Fileman/extract_file" `
-        -Body @{ dir = $homeDirPath; filename = "incremental.zip"; dest = $absRemotePath } `
-        -Headers $apiHeaders `
-        -SkipTls $skipTlsVerify
-
-      if ($extractResult.status -eq 1) {
-        Write-Host "  Extracted $($changedFiles.Count) file(s) into $absRemotePath." -ForegroundColor Green
-      } else {
-        $errMsg = if ($extractResult.errors) { $extractResult.errors -join ', ' } else { 'unknown error' }
-        Write-Host "  Extract API warning: $errMsg" -ForegroundColor Yellow
-      }
+      $phpBytes            = [System.IO.File]::ReadAllBytes($phpLocalPath)
+      $ftpPhp              = [System.Net.FtpWebRequest]::Create($ftpPhpUrl)
+      $ftpPhp.Method       = [System.Net.WebRequestMethods+Ftp]::UploadFile
+      $ftpPhp.Credentials  = $cred
+      $ftpPhp.EnableSsl    = $deploySsl
+      $ftpPhp.UseBinary    = $true
+      $ftpPhp.UsePassive   = $true
+      $ftpPhp.ContentLength = $phpBytes.Length
+      $phpStream           = $ftpPhp.GetRequestStream()
+      $phpStream.Write($phpBytes, 0, $phpBytes.Length)
+      $phpStream.Close()
+      ($ftpPhp.GetResponse()).Close()
     } catch {
-      Write-Host "  Extract API failed: $_" -ForegroundColor Red
-      # Clean up ZIP before exiting
+      Write-Host "  PHP upload failed: $_" -ForegroundColor Red
+      Remove-Item $phpLocalPath -Force -ErrorAction SilentlyContinue
+      # Clean up ZIP
       try {
-        $ftpDel            = [System.Net.FtpWebRequest]::Create($ftpZipUrl)
-        $ftpDel.Method     = [System.Net.WebRequestMethods+Ftp]::DeleteFile
-        $ftpDel.Credentials = $cred
-        $ftpDel.EnableSsl  = $deploySsl
-        $ftpDel.UseBinary  = $true
-        $ftpDel.UsePassive = $true
+        $ftpDel = [System.Net.FtpWebRequest]::Create($ftpZipUrl)
+        $ftpDel.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
+        $ftpDel.Credentials = $cred; $ftpDel.EnableSsl = $deploySsl
+        $ftpDel.UseBinary = $true; $ftpDel.UsePassive = $true
         ($ftpDel.GetResponse()).Close()
       } catch {}
       Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
       exit 1
+    } finally {
+      Remove-Item $phpLocalPath -Force -ErrorAction SilentlyContinue
     }
 
-    # ── Clean up ZIP from server ──────────────────────────────────────────────
+    Write-Host "  Calling PHP extractor..." -ForegroundColor White
+
+    $siteUrl    = if ($envVars['DEPLOY_SITE_URL']) { $envVars['DEPLOY_SITE_URL'].TrimEnd('/') } else { "http://$deployHost" }
+    $phpCallUrl = "$siteUrl/$phpFileName`?t=$extractToken"
+
+    $phpCleanupBlock = {
+      try {
+        $ftpDelPhp = [System.Net.FtpWebRequest]::Create($ftpPhpUrl)
+        $ftpDelPhp.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
+        $ftpDelPhp.Credentials = $cred; $ftpDelPhp.EnableSsl = $deploySsl
+        $ftpDelPhp.UseBinary = $true; $ftpDelPhp.UsePassive = $true
+        ($ftpDelPhp.GetResponse()).Close()
+      } catch {}
+    }
+
     try {
-      $ftpDel            = [System.Net.FtpWebRequest]::Create($ftpZipUrl)
-      $ftpDel.Method     = [System.Net.WebRequestMethods+Ftp]::DeleteFile
-      $ftpDel.Credentials = $cred
-      $ftpDel.EnableSsl  = $deploySsl
-      $ftpDel.UseBinary  = $true
-      $ftpDel.UsePassive = $true
-      ($ftpDel.GetResponse()).Close()
-      Write-Host "  Cleaned up temp ZIP from server." -ForegroundColor DarkGray
+      $webResp = $null
+      if ($skipTlsVerify -and $PSVersionTable.PSVersion.Major -ge 6) {
+        $webResp = Invoke-WebRequest -Uri $phpCallUrl -Method Get -SkipCertificateCheck -TimeoutSec 120 -UseBasicParsing
+      } else {
+        $webResp = Invoke-WebRequest -Uri $phpCallUrl -Method Get -TimeoutSec 120 -UseBasicParsing
+      }
+      $rawBody = $webResp.Content.TrimStart([char]0xFEFF)  # strip UTF-8 BOM if present
+      Write-Host "  PHP response (status $($webResp.StatusCode)): $rawBody" -ForegroundColor DarkGray
+      $phpResult = $null
+      try { $phpResult = $rawBody | ConvertFrom-Json } catch {}
+      if ($phpResult -and $phpResult.ok -eq $true) {
+        Write-Host "  Extracted $($changedFiles.Count) file(s) into $absRemotePath." -ForegroundColor Green
+      } else {
+        $errDetail = if ($phpResult) { $phpResult.error } else { $rawBody }
+        Write-Host "  PHP extraction error: $errDetail" -ForegroundColor Red
+        & $phpCleanupBlock
+        # Clean up ZIP
+        try {
+          $ftpDel = [System.Net.FtpWebRequest]::Create($ftpZipUrl)
+          $ftpDel.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
+          $ftpDel.Credentials = $cred; $ftpDel.EnableSsl = $deploySsl
+          $ftpDel.UseBinary = $true; $ftpDel.UsePassive = $true
+          ($ftpDel.GetResponse()).Close()
+        } catch {}
+        Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
+        exit 1
+      }
     } catch {
-      Write-Host "  WARN: Could not remove temp ZIP from server (not critical): $_" -ForegroundColor Yellow
+      Write-Host "  PHP extraction failed: $_" -ForegroundColor Red
+      & $phpCleanupBlock
+      # Clean up ZIP
+      try {
+        $ftpDel = [System.Net.FtpWebRequest]::Create($ftpZipUrl)
+        $ftpDel.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
+        $ftpDel.Credentials = $cred; $ftpDel.EnableSsl = $deploySsl
+        $ftpDel.UseBinary = $true; $ftpDel.UsePassive = $true
+        ($ftpDel.GetResponse()).Close()
+      } catch {}
+      Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
+      exit 1
     }
 
     Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
