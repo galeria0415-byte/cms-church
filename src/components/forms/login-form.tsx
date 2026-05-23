@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -12,6 +13,8 @@ import { loginSchema, type LoginInput } from "@/lib/validators/auth";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const justSetUp = searchParams.get("setup") === "1";
   const [error, setError] = useState<string | null>(null);
   const {
     register,
@@ -19,10 +22,7 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "admin@graceharbor.org",
-      password: "ChangeMe123!",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -59,11 +59,17 @@ export function LoginForm() {
         <Input id="password" type="password" autoComplete="current-password" {...register("password")} />
         {errors.password ? <p className="mt-2 text-sm text-[#a53f2b]">{errors.password.message}</p> : null}
       </div>
-      {error ? <p className="rounded-2xl bg-[#fff1ec] px-4 py-3 text-sm text-[#a53f2b]">{error}</p> : null}
+      {error ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {justSetUp ? <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">Admin account created. Sign in to continue.</p> : null}
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Signing in..." : "Sign in"}
       </Button>
-      <p className="text-sm text-[var(--muted)]">Seeded admin login: admin@graceharbor.org / ChangeMe123!</p>
+      <p className="text-center text-sm text-[var(--muted)]">
+        First time?{" "}
+        <Link href="/setup" className="font-medium text-[var(--accent)] hover:underline">
+          Set up your account
+        </Link>
+      </p>
     </form>
   );
 }

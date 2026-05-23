@@ -12,13 +12,12 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(190,144,112,0.22),_transparent_45%),linear-gradient(180deg,_#fbf6ef_0%,_#f2e4d3_100%)]" />
-      <Card className="relative z-10 w-full max-w-md bg-white/95">
-        <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Secure access</p>
-        <h1 className="mt-3 font-serif text-4xl text-[var(--ink)]">Church admin login</h1>
-        <p className="mt-3 text-sm text-[var(--muted)]">Sign in to manage members, programs, events, galleries, and website content.</p>
-        <div className="mt-8">
+    <main className="relative flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="absolute inset-0 bg-[var(--background)]" />
+      <Card className="relative z-10 w-full max-w-sm">
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Sign in</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">Access the church admin dashboard.</p>
+        <div className="mt-5">
           <LoginForm />
         </div>
       </Card>

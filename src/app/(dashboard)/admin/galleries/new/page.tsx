@@ -7,7 +7,7 @@ export default async function NewGalleryPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="font-serif text-4xl text-[var(--ink)]">Create gallery</h1>
+      <h1 className="text-xl font-semibold text-[var(--ink)]">Create gallery</h1>
       <GalleryForm />
     </div>
   );

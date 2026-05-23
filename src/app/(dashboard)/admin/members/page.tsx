@@ -66,8 +66,8 @@ export default async function MembersPage({ searchParams }: { searchParams: Sear
     <div className="space-y-6">
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Membership database</p>
-          <h1 className="mt-2 font-serif text-4xl text-[var(--ink)]">Members</h1>
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Membership database</p>
+          <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Members</h1>
         </div>
         <Link href="/admin/members/new">
           <Button>Add member</Button>

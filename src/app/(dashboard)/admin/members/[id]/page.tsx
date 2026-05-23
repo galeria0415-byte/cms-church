@@ -39,8 +39,8 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
             </div>
           )}
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Member profile</p>
-            <h1 className="mt-2 font-serif text-4xl text-[var(--ink)]">{fullName(member)}</h1>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Member profile</p>
+            <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">{fullName(member)}</h1>
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge>{member.memberId}</Badge>
               <Badge>{member.membershipStatus}</Badge>
@@ -58,7 +58,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
 
       <section className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="font-serif text-2xl text-[var(--ink)]">Personal information</h2>
+          <h2 className="text-base font-semibold text-[var(--ink)]">Personal information</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <DetailRow label="Birth date" value={formatDate(member.birthDate)} />
             <DetailRow label="Gender" value={member.gender} />
@@ -71,7 +71,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           </div>
         </Card>
         <Card>
-          <h2 className="font-serif text-2xl text-[var(--ink)]">Family and work</h2>
+          <h2 className="text-base font-semibold text-[var(--ink)]">Family and work</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <DetailRow label="Spouse" value={member.spouseName} />
             <DetailRow label="Wedding date" value={formatDate(member.weddingDate)} />
@@ -84,7 +84,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           </div>
         </Card>
         <Card>
-          <h2 className="font-serif text-2xl text-[var(--ink)]">Church affiliation</h2>
+          <h2 className="text-base font-semibold text-[var(--ink)]">Church affiliation</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <DetailRow label="Joined church" value={formatDate(member.dateJoinedChurch)} />
             <DetailRow label="Membership type" value={member.membershipType} />
@@ -97,7 +97,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           </div>
         </Card>
         <Card>
-          <h2 className="font-serif text-2xl text-[var(--ink)]">Ministry information</h2>
+          <h2 className="text-base font-semibold text-[var(--ink)]">Ministry information</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <DetailRow label="Ministries" value={parseCsv(member.ministriesJoined).join(", ")} />
             <DetailRow label="Ministry role" value={member.ministryRole} />

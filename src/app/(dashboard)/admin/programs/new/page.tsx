@@ -7,7 +7,7 @@ export default async function NewProgramPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="font-serif text-4xl text-[var(--ink)]">Create program</h1>
+      <h1 className="text-xl font-semibold text-[var(--ink)]">Create program</h1>
       <ProgramForm />
     </div>
   );

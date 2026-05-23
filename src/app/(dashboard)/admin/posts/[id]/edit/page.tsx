@@ -18,7 +18,7 @@ export default async function EditPostPage({ params }: { params: Params }) {
 
   return (
     <div className="space-y-4">
-      <h1 className="font-serif text-4xl text-[var(--ink)]">Edit post</h1>
+      <h1 className="text-xl font-semibold text-[var(--ink)]">Edit post</h1>
       <PostForm post={mapPostToForm(post)} />
     </div>
   );

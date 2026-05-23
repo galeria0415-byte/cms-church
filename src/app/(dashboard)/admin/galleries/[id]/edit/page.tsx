@@ -18,7 +18,7 @@ export default async function EditGalleryPage({ params }: { params: Params }) {
 
   return (
     <div className="space-y-4">
-      <h1 className="font-serif text-4xl text-[var(--ink)]">Edit gallery</h1>
+      <h1 className="text-xl font-semibold text-[var(--ink)]">Edit gallery</h1>
       <GalleryForm gallery={mapGalleryToForm(gallery)} />
     </div>
   );

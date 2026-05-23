@@ -19,8 +19,8 @@ export default async function EditMemberPage({ params }: { params: Params }) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Membership database</p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--ink)]">Edit member</h1>
+        <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Membership database</p>
+        <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Edit member</h1>
       </div>
       <MemberForm member={mapMemberToForm(member)} />
     </div>

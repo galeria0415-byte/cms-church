@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-6">
       <section className="rounded-[32px] bg-[linear-gradient(135deg,_#f4e1cf_0%,_#fff8f1_60%,_#ecd6be_100%)] px-6 py-8 shadow-[0_30px_80px_-45px_rgba(80,62,44,0.45)] lg:px-8">
         <p className="text-xs uppercase tracking-[0.28em] text-[var(--muted)]">Admin dashboard</p>
-        <h1 className="mt-3 font-serif text-4xl text-[var(--ink)]">Church operations overview</h1>
+        <h1 className="mt-3 text-xl font-semibold text-[var(--ink)]">Church operations overview</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--muted)]">Track the people database, public content, and upcoming church activity from one dashboard.</p>
       </section>
 
@@ -40,8 +40,8 @@ export default async function AdminDashboardPage() {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Quick links</p>
-              <h2 className="mt-2 font-serif text-2xl text-[var(--ink)]">Jump to work</h2>
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Quick links</p>
+              <h2 className="mt-2 text-base font-semibold text-[var(--ink)]">Jump to work</h2>
             </div>
           </div>
           <div className="mt-6 grid gap-3">
@@ -62,8 +62,8 @@ export default async function AdminDashboardPage() {
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Activity summary</p>
-              <h2 className="mt-2 font-serif text-2xl text-[var(--ink)]">Recent admin activity</h2>
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Activity summary</p>
+              <h2 className="mt-2 text-base font-semibold text-[var(--ink)]">Recent admin activity</h2>
             </div>
           </div>
           <div className="mt-6 space-y-3">

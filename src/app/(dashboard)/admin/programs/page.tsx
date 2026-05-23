@@ -11,8 +11,8 @@ export default async function ProgramsPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">CMS</p>
-          <h1 className="mt-2 font-serif text-4xl text-[var(--ink)]">Programs and schedules</h1>
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">CMS</p>
+          <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Programs and schedules</h1>
         </div>
         <Link href="/admin/programs/new" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">
           New program
