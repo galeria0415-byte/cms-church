@@ -1,0 +1,8 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#F2E3D0"/>
+  <circle cx="960" cy="160" r="150" fill="#E6BB8B" fill-opacity="0.58"/>
+  <circle cx="220" cy="700" r="200" fill="#D8A986" fill-opacity="0.42"/>
+  <path d="M290 590C360 470 450 410 560 410C670 410 760 470 830 590" stroke="#8A5536" stroke-width="30" stroke-linecap="round"/>
+  <path d="M540 400V250C540 228 558 210 580 210H620C642 210 660 228 660 250V400" stroke="#8A5536" stroke-width="30" stroke-linecap="round"/>
+  <text x="600" y="760" text-anchor="middle" fill="#3B2A21" font-family="Georgia, serif" font-size="54">Sunrise Worship</text>
+</svg>

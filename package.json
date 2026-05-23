@@ -1,0 +1,53 @@
+{
+  "name": "church-cms",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "build:artifact": "node scripts/build-standalone-artifact.mjs",
+    "build:deploy": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1",
+    "build:deploy:dry-run": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1 -DryRun -NoGit",
+    "build:deploy:no-upload": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1 -NoDeploy",
+    "start": "next start",
+    "lint": "eslint .",
+    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "db:push": "prisma db push --schema=./prisma/schema.prisma",
+    "install:cpanel": "node scripts/cpanel-install.mjs",
+    "deploy:cpanel": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1",
+    "deploy:cpanel:no-git": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1 -NoGit",
+    "deploy:cpanel:dry-run": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1 -DryRun -NoGit"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@prisma/client": "^6.16.2",
+    "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.3.0",
+    "lucide-react": "^1.16.0",
+    "next": "16.2.6",
+    "next-auth": "^4.24.14",
+    "prisma": "^6.16.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.76.0",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.3",
+    "typescript": "^5"
+  }
+}

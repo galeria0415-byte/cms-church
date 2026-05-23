@@ -1,0 +1,8 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#EDE5D7"/>
+  <path d="M180 640C280 470 420 360 600 360C780 360 920 470 1020 640" stroke="#5E7F66" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="360" cy="470" r="80" fill="#D38D63"/>
+  <circle cx="600" cy="430" r="80" fill="#E1B184"/>
+  <circle cx="840" cy="470" r="80" fill="#C56F48"/>
+  <text x="600" y="780" text-anchor="middle" fill="#2B241E" font-family="Georgia, serif" font-size="54">Children's Choir</text>
+</svg>

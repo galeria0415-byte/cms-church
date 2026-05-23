@@ -1,0 +1,75 @@
+import { NextResponse } from "next/server";
+
+import { requireRole } from "@/lib/auth";
+import { canDeleteMember, MEMBER_MANAGER_ROLES } from "@/lib/permissions";
+import { prisma } from "@/lib/prisma";
+import { memberSchema } from "@/lib/validators/member";
+
+type Params = {
+  params: Promise<{ id: string }>;
+};
+
+export async function PUT(request: Request, { params }: Params) {
+  const session = await requireRole(MEMBER_MANAGER_ROLES);
+  const { id } = await params;
+  const body = await request.json();
+  const parsed = memberSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().formErrors[0] ?? "Invalid member data." }, { status: 400 });
+  }
+
+  try {
+    const member = await prisma.member.update({
+      where: { id },
+      data: parsed.data,
+    });
+
+    await prisma.activityLog.create({
+      data: {
+        action: "update",
+        entityType: "member",
+        entityId: member.id,
+        summary: `Updated member ${member.firstName} ${member.lastName}`,
+        userId: session.user.id,
+      },
+    });
+
+    return NextResponse.json({ member });
+  } catch {
+    return NextResponse.json({ error: "Unable to update this member." }, { status: 400 });
+  }
+}
+
+export async function DELETE(_: Request, { params }: Params) {
+  const session = await requireRole(MEMBER_MANAGER_ROLES);
+
+  if (!canDeleteMember(session.user.role)) {
+    return NextResponse.json({ error: "Your role cannot archive members." }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  try {
+    const member = await prisma.member.update({
+      where: { id },
+      data: { isArchived: true, recordStatus: "ARCHIVED" },
+    });
+
+    await prisma.activityLog.create({
+      data: {
+        action: "archive",
+        entityType: "member",
+        entityId: member.id,
+        summary: `Archived member ${member.firstName} ${member.lastName}`,
+        userId: session.user.id,
+      },
+    });
+
+    return NextResponse.json({ member });
+  } catch (e: unknown) {
+    const code = (e as { code?: string })?.code;
+    if (code === "P2025") return NextResponse.json({ error: "Member not found." }, { status: 404 });
+    return NextResponse.json({ error: "Failed to archive member." }, { status: 500 });
+  }
+}

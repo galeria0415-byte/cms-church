@@ -1,0 +1,8 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#F8EEDF"/>
+  <rect x="120" y="190" width="960" height="520" rx="60" fill="#FFF9F2" stroke="#D7B28E" stroke-width="20"/>
+  <circle cx="360" cy="450" r="110" fill="#D7B28E"/>
+  <circle cx="600" cy="450" r="110" fill="#C68E63"/>
+  <circle cx="840" cy="450" r="110" fill="#A76945"/>
+  <text x="600" y="795" text-anchor="middle" fill="#3B2A21" font-family="Georgia, serif" font-size="54">Community Breakfast</text>
+</svg>
