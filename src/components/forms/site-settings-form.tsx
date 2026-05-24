@@ -110,6 +110,19 @@ export function SiteSettingsForm({ initialSettings }: { initialSettings: SiteCon
             <Textarea value={settings.address} onChange={(event) => setSettings((current) => ({ ...current, address: event.target.value }))} className="min-h-[88px]" />
           </Field>
         </Card>
+
+        <Card className="space-y-6">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Homepage</p>
+            <h2 className="mt-2 font-serif text-2xl text-[var(--ink)]">Hero section</h2>
+          </div>
+          <Field label="Badge label">
+            <Input value={settings.heroBadge} onChange={(event) => setSettings((current) => ({ ...current, heroBadge: event.target.value }))} placeholder="e.g. Clean church operations" />
+          </Field>
+          <Field label="Headline">
+            <Textarea value={settings.heroHeadline} onChange={(event) => setSettings((current) => ({ ...current, heroHeadline: event.target.value }))} className="min-h-[80px]" placeholder="The main heading shown on the homepage hero." />
+          </Field>
+        </Card>
       </div>
     </form>
   );

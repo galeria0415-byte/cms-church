@@ -60,9 +60,11 @@ const memberFormSchema = z.object({
   fatherName: z.string().optional(),
   fatherMemberId: z.string().optional(),
   fatherDeceasedDate: z.string().optional(),
+  fatherBirthDate: z.string().optional(),
   motherName: z.string().optional(),
   motherMemberId: z.string().optional(),
   motherDeceasedDate: z.string().optional(),
+  motherBirthDate: z.string().optional(),
   childrenLinks: z.string().optional(),
   guardian: z.string().optional(),
   deceasedDate: z.string().optional(),
@@ -84,7 +86,6 @@ const memberFormSchema = z.object({
   confirmationDate: z.string().optional(),
   serviceAttendanceStatus: z.string().default(ServiceAttendanceStatus.REGULAR),
   ministryRoles: z.string().optional(),
-  volunteerStatus: z.string().optional(),
   trainingCompleted: z.string().optional(),
   notes: z.string().optional(),
   remarks: z.string().optional(),
@@ -170,9 +171,11 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
   const [error, setError] = useState<string | null>(null);
   const [addrRegion, setAddrRegion] = useState("");
   const [addrProvince, setAddrProvince] = useState("");
-  const [childEntries, setChildEntries] = useState<Array<{ name: string; memberId: string }>>(() => {
+  const [addrCity, setAddrCity] = useState("");
+  const [addrBarangay, setAddrBarangay] = useState("");
+  const [childEntries, setChildEntries] = useState<Array<{ name: string; memberId: string; birthDate?: string }>>(() => {
     try {
-      return JSON.parse((member as Record<string, unknown> | undefined)?.childrenLinks as string ?? "[]") as Array<{ name: string; memberId: string }>;
+      return JSON.parse((member as Record<string, unknown> | undefined)?.childrenLinks as string ?? "[]") as Array<{ name: string; memberId: string; birthDate?: string }>;
     } catch {
       return [];
     }
@@ -217,9 +220,11 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       fatherName: (member as Record<string, unknown> | undefined)?.fatherName as string ?? "",
       fatherMemberId: (member as Record<string, unknown> | undefined)?.fatherMemberId as string ?? "",
       fatherDeceasedDate: (member as Record<string, unknown> | undefined)?.fatherDeceasedDate as string ?? "",
+      fatherBirthDate: (member as Record<string, unknown> | undefined)?.fatherBirthDate as string ?? "",
       motherName: (member as Record<string, unknown> | undefined)?.motherName as string ?? "",
       motherMemberId: (member as Record<string, unknown> | undefined)?.motherMemberId as string ?? "",
       motherDeceasedDate: (member as Record<string, unknown> | undefined)?.motherDeceasedDate as string ?? "",
+      motherBirthDate: (member as Record<string, unknown> | undefined)?.motherBirthDate as string ?? "",
       childrenLinks: (member as Record<string, unknown> | undefined)?.childrenLinks as string ?? "",
       guardian: member?.guardian ?? "",
       deceasedDate: member?.deceasedDate ?? "",
@@ -241,7 +246,6 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       confirmationDate: (member as Record<string, unknown> | undefined)?.confirmationDate as string ?? "",
       serviceAttendanceStatus: member?.serviceAttendanceStatus ?? ServiceAttendanceStatus.REGULAR,
       ministryRoles: (member as Record<string, unknown> | undefined)?.ministryRoles as string ?? "",
-      volunteerStatus: member?.volunteerStatus ?? "",
       trainingCompleted: member?.trainingCompleted ?? "",
       notes: member?.notes ?? "",
       remarks: member?.remarks ?? "",
@@ -251,14 +255,18 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
   });
 
   const profilePhotoUrl = useWatch({ control, name: "profilePhotoUrl" });
+  const watchedFatherMemberId = useWatch({ control, name: "fatherMemberId" });
+  const watchedMotherMemberId = useWatch({ control, name: "motherMemberId" });
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const selectedRegion = PH_REGIONS.find((r) => r.code === addrRegion);
   const provinces = selectedRegion ? [...selectedRegion.provinces] : [];
+  const cities = selectedRegion ? [...selectedRegion.cities] : [];
 
   const updateAddressHint = useCallback(
-    (region: string, province: string) => {
+    (region: string, province: string, city: string) => {
       const current = getValues("address");
-      const hint = [province, region].filter(Boolean).join(", ");
+      const hint = [city, province, region].filter(Boolean).join(", ");
       if (!current && hint) setValue("address", hint + ", ");
     },
     [getValues, setValue],
@@ -292,7 +300,9 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       birthDate: values.birthDate || undefined,
       weddingDate: values.weddingDate || undefined,
       fatherDeceasedDate: values.fatherDeceasedDate || undefined,
+      fatherBirthDate: values.fatherBirthDate || undefined,
       motherDeceasedDate: values.motherDeceasedDate || undefined,
+      motherBirthDate: values.motherBirthDate || undefined,
       baptizedDate: values.baptizedDate || undefined,
       confirmationDate: values.confirmationDate || undefined,
       deceasedDate: values.deceasedDate || undefined,
@@ -408,17 +418,25 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
+                        setPhotoError(null);
                         const fd = new FormData();
                         fd.append("file", file);
-                        const res = await fetch("/api/upload", { method: "POST", body: fd });
-                        if (res.ok) {
-                          const d = await res.json() as { url?: string };
-                          if (d.url) setValue("profilePhotoUrl", d.url);
+                        try {
+                          const res = await fetch("/api/upload", { method: "POST", body: fd });
+                          if (res.ok) {
+                            const d = await res.json() as { url?: string };
+                            if (d.url) setValue("profilePhotoUrl", d.url);
+                          } else {
+                            setPhotoError("Upload failed. Please try again.");
+                          }
+                        } catch {
+                          setPhotoError("Network error. Please try again.");
                         }
                       }}
                     />
                   </label>
                   <p className="mt-1 text-[11px] text-[var(--muted)]">JPG, PNG or WebP. Max 10 MB.</p>
+                  {photoError && <p className="mt-1 text-[11px] text-red-600">{photoError}</p>}
                 </div>
               </div>
 
@@ -492,7 +510,8 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                       onChange={(e) => {
                         setAddrRegion(e.target.value);
                         setAddrProvince("");
-                        updateAddressHint(e.target.value, "");
+                        setAddrCity("");
+                        updateAddressHint(e.target.value, "", "");
                       }}
                     >
                       <option value="">Select region</option>
@@ -507,7 +526,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                       disabled={!addrRegion}
                       onChange={(e) => {
                         setAddrProvince(e.target.value);
-                        updateAddressHint(addrRegion, e.target.value);
+                        updateAddressHint(addrRegion, e.target.value, addrCity);
                       }}
                     >
                       <option value="">Select province</option>
@@ -516,9 +535,31 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                       ))}
                     </Select>
                   </Field>
+                  <Field label="City / Municipality">
+                    <Select
+                      value={addrCity}
+                      disabled={!addrRegion}
+                      onChange={(e) => {
+                        setAddrCity(e.target.value);
+                        updateAddressHint(addrRegion, addrProvince, e.target.value);
+                      }}
+                    >
+                      <option value="">Select city / municipality</option>
+                      {cities.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <Field label="Barangay">
+                    <Input
+                      placeholder="e.g. Brgy. San Isidro"
+                      value={addrBarangay}
+                      onChange={(e) => setAddrBarangay(e.target.value)}
+                    />
+                  </Field>
                 </div>
-                <Field label="Street / Barangay / City / Municipality" hint="Include house number, street, barangay, and city.">
-                  <Input placeholder="House No., Street, Barangay, City/Municipality" {...register("address")} />
+                <Field label="Street / House No." hint="Include house number and street name.">
+                  <Input placeholder="House No., Street Name" {...register("address")} />
                 </Field>
               </div>
 
@@ -564,6 +605,11 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                   <Field label="Father's Date of Death">
                     <Input type="date" {...register("fatherDeceasedDate")} />
                   </Field>
+                  {!watchedFatherMemberId && (
+                    <Field label="Father's Date of Birth" hint="Only needed when no member record is linked.">
+                      <Input type="date" {...register("fatherBirthDate")} />
+                    </Field>
+                  )}
                 </div>
               </div>
 
@@ -580,6 +626,11 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                   <Field label="Mother's Date of Death">
                     <Input type="date" {...register("motherDeceasedDate")} />
                   </Field>
+                  {!watchedMotherMemberId && (
+                    <Field label="Mother's Date of Birth" hint="Only needed when no member record is linked.">
+                      <Input type="date" {...register("motherBirthDate")} />
+                    </Field>
+                  )}
                 </div>
               </div>
 
@@ -627,6 +678,19 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                             }}
                           />
                         </Field>
+                        {!child.memberId && (
+                          <Field label="Date of Birth" hint="Only needed when no member record is linked.">
+                            <Input
+                              type="date"
+                              value={child.birthDate ?? ""}
+                              onChange={(e) => {
+                                const updated = [...childEntries];
+                                updated[index] = { ...updated[index], birthDate: e.target.value };
+                                setChildEntries(updated);
+                              }}
+                            />
+                          </Field>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -870,16 +934,6 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Volunteer Status">
-                  <Select {...register("volunteerStatus")}>
-                    <option value="">Select status</option>
-                    {["Active", "Inactive", "On Leave", "Training"].map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </Select>
-                </Field>
-              </div>
               <Field label="Training Completed" hint="Separate multiple trainings with commas.">
                 <Textarea rows={2} placeholder="e.g. New Members Class, Discipleship 101" {...register("trainingCompleted")} />
               </Field>
@@ -948,7 +1002,6 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 </SummarySection>
                 <SummarySection title="Ministry">
                   <SummaryRow label="Roles" value={ministryRoleEntries.map((r) => `${r.ministry}: ${r.role}`).join("; ")} />
-                  <SummaryRow label="Volunteer Status" value={values.volunteerStatus} />
                   <SummaryRow label="Training" value={values.trainingCompleted} />
                   <SummaryRow label="Notes" value={values.notes} />
                 </SummarySection>
@@ -1010,9 +1063,11 @@ export function mapMemberToForm(member: Record<string, unknown> & { id: string }
     fatherName: String(member.fatherName ?? ""),
     fatherMemberId: String(member.fatherMemberId ?? ""),
     fatherDeceasedDate: formatDateInput(member.fatherDeceasedDate as string | Date | null),
+    fatherBirthDate: formatDateInput((member as Record<string, unknown>).fatherBirthDate as string | Date | null),
     motherName: String(member.motherName ?? ""),
     motherMemberId: String(member.motherMemberId ?? ""),
     motherDeceasedDate: formatDateInput(member.motherDeceasedDate as string | Date | null),
+    motherBirthDate: formatDateInput((member as Record<string, unknown>).motherBirthDate as string | Date | null),
     childrenLinks: typeof member.childrenLinks === "string" ? member.childrenLinks : "[]",
     guardian: String(member.guardian ?? ""),
     deceasedDate: formatDateInput(member.deceasedDate as string | Date | null),
@@ -1036,7 +1091,6 @@ export function mapMemberToForm(member: Record<string, unknown> & { id: string }
       member.serviceAttendanceStatus ?? ServiceAttendanceStatus.REGULAR,
     ),
     ministryRoles: typeof member.ministryRoles === "string" ? member.ministryRoles : "[]",
-    volunteerStatus: String(member.volunteerStatus ?? ""),
     trainingCompleted:
       typeof member.trainingCompleted === "string"
         ? member.trainingCompleted

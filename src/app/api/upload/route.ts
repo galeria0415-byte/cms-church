@@ -36,14 +36,18 @@ export async function POST(request: Request) {
   const buffer = Buffer.from(arrayBuffer);
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "-").toLowerCase();
   const fileName = `${Date.now()}-${safeName}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  const uploadDir = process.env.UPLOAD_DIR
+    ? path.resolve(process.env.UPLOAD_DIR)
+    : path.join(process.cwd(), "public", "uploads");
 
   try {
     await mkdir(uploadDir, { recursive: true });
     await writeFile(path.join(uploadDir, fileName), buffer);
-  } catch {
-    return NextResponse.json({ error: "Failed to save file." }, { status: 500 });
+  } catch (err) {
+    console.error("Upload write error:", err);
+    return NextResponse.json({ error: "Failed to save file. Check server write permissions." }, { status: 500 });
   }
 
-  return NextResponse.json({ url: `/uploads/${fileName}` });
+  const urlBase = process.env.UPLOAD_URL_BASE ?? "/uploads";
+  return NextResponse.json({ url: `${urlBase}/${fileName}` });
 }

@@ -2,6 +2,8 @@ export type SiteConfig = {
   name: string;
   tagline: string;
   description: string;
+  heroHeadline: string;
+  heroBadge: string;
   address: string;
   phone: string;
   email: string;
@@ -13,6 +15,8 @@ export const siteConfig: SiteConfig = {
   tagline: "A church website and care-focused CMS for people, programs, and pastoral follow-up.",
   description:
     "Grace Harbor Church helps teams manage church updates, events, galleries, programs, and membership care in one place.",
+  heroHeadline: "A cleaner church website and admin workspace for communication, care, and records.",
+  heroBadge: "Clean church operations",
   address: "214 Hope Avenue, Pasig City, Metro Manila",
   phone: "+63 2 8123 4567",
   email: "hello@graceharbor.org",

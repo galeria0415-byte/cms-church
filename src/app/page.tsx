@@ -11,9 +11,34 @@ import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+type BibleVerse = { bookname: string; chapter: string; verse: string; text: string; title: string };
+
+async function getDailyVerse(): Promise<BibleVerse | null> {
+  try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch("https://labs.bible.org/api/?passage=votd&type=json", {
+      next: { revalidate: 86400 },
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    if (!res.ok) return null;
+    const data = await res.json() as BibleVerse[];
+    return data[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function Home() {
-  const data = await getSafeHomepageData();
-  const settings = await getSiteSettings();
+  const [data, settings, verse] = await Promise.all([
+    getSafeHomepageData(),
+    getSiteSettings(),
+    getDailyVerse(),
+  ]);
+
+  const now = new Date();
+  const odbUrl = `https://odb.org/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}/`;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,var(--background),#f8fbfd)]">
@@ -23,9 +48,9 @@ export default async function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(36,99,123,0.14),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(15,23,42,0.08),_transparent_30%)]" />
           <div className="relative mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div>
-              <Badge>Clean church operations</Badge>
+              <Badge>{settings.heroBadge}</Badge>
               <h1 className="mt-6 max-w-4xl font-serif text-5xl leading-[1.05] text-[var(--ink)] lg:text-7xl">
-                A cleaner church website and admin workspace for communication, care, and records.
+                {settings.heroHeadline}
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">{settings.description}</p>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -97,6 +122,33 @@ export default async function Home() {
             </div>
           </Card>
         </section>
+
+        {(verse !== undefined) && (
+          <section className="mx-auto w-full max-w-7xl px-6 pb-16 lg:px-10">
+            <div className="grid gap-6 lg:grid-cols-2">
+              {verse && (
+                <Card className="flex flex-col gap-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Verse of the Day</p>
+                  <blockquote className="font-serif text-xl italic leading-8 text-[var(--ink)]">&ldquo;{verse.text}&rdquo;</blockquote>
+                  <p className="text-sm font-semibold text-[var(--accent)]">{verse.bookname} {verse.chapter}:{verse.verse}</p>
+                </Card>
+              )}
+              <Card className="flex flex-col gap-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Daily Devotion</p>
+                <p className="font-serif text-xl text-[var(--ink)]">Our Daily Bread</p>
+                <p className="text-sm leading-7 text-[var(--muted)]">Start your day with a short, scripture-based reflection from Our Daily Bread.</p>
+                <a
+                  href={odbUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
+                >
+                  Read today&apos;s devotion →
+                </a>
+              </Card>
+            </div>
+          </section>
+        )}
 
         <section className="mx-auto w-full max-w-7xl px-6 pb-16 lg:px-10">
           <Card>

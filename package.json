@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "prisma generate --schema=./prisma/schema.prisma",
     "build": "next build --webpack",
     "build:artifact": "node scripts/build-standalone-artifact.mjs",
     "build:deploy": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1",

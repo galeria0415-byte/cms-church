@@ -109,7 +109,6 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           <h2 className="text-base font-semibold text-[var(--ink)]">Ministry information</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <DetailRow label="Ministry roles" value={(() => { try { return (JSON.parse(member.ministryRoles ?? "[]") as Array<{ ministry: string; role: string }>).map((r) => `${r.ministry}: ${r.role}`).filter((r) => r !== ": ").join("; "); } catch { return ""; } })()} />
-            <DetailRow label="Volunteer status" value={member.volunteerStatus} />
             <DetailRow label="Training completed" value={parseCsv(member.trainingCompleted).join(", ")} />
             <DetailRow label="Notes" value={member.notes} />
             <DetailRow label="Remarks" value={member.remarks} />

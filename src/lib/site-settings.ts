@@ -18,6 +18,8 @@ function normalizeSettings(value: unknown): SiteConfig {
     name: normalizeString(input.name) || siteConfig.name,
     tagline: normalizeString(input.tagline) || siteConfig.tagline,
     description: normalizeString(input.description) || siteConfig.description,
+    heroHeadline: normalizeString(input.heroHeadline) || siteConfig.heroHeadline,
+    heroBadge: normalizeString(input.heroBadge) || siteConfig.heroBadge,
     address: normalizeString(input.address) || siteConfig.address,
     phone: normalizeString(input.phone) || siteConfig.phone,
     email: normalizeString(input.email) || siteConfig.email,

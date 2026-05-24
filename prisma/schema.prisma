@@ -137,9 +137,11 @@ model Member {
   fatherName               String?
   fatherMemberId           String?
   fatherDeceasedDate       DateTime?
+  fatherBirthDate          DateTime?
   motherName               String?
   motherMemberId           String?
   motherDeceasedDate       DateTime?
+  motherBirthDate          DateTime?
   childrenLinks            String?                  @db.Text
   guardian                 String?
   deceasedDate             DateTime?
@@ -161,7 +163,6 @@ model Member {
   confirmationDate         DateTime?
   serviceAttendanceStatus  ServiceAttendanceStatus @default(REGULAR)
   ministryRoles            String?                  @db.Text
-  volunteerStatus          String?
   trainingCompleted        String?                  @db.Text
   notes                    String?
   remarks                  String?
