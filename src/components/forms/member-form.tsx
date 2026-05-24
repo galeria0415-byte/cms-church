@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  BaptismStatus,
   CivilStatus,
   Gender,
   MembershipStatus,
@@ -18,9 +17,11 @@ import {
   ChevronRight,
   Heart,
   Lock,
+  Plus,
   Upload,
   User,
   Users,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -56,12 +57,14 @@ const memberFormSchema = z.object({
   emergencyContactNumber: z.string().optional(),
   spouseName: z.string().optional(),
   weddingDate: z.string().optional(),
-  childrenNames: z.string().optional(),
-  childCount: z.coerce.number().min(0).default(0),
-  parentsName: z.string().optional(),
+  fatherName: z.string().optional(),
+  fatherMemberId: z.string().optional(),
+  fatherDeceasedDate: z.string().optional(),
+  motherName: z.string().optional(),
+  motherMemberId: z.string().optional(),
+  motherDeceasedDate: z.string().optional(),
+  childrenLinks: z.string().optional(),
   guardian: z.string().optional(),
-  householdGroup: z.string().optional(),
-  dependents: z.coerce.number().min(0).default(0),
   deceasedDate: z.string().optional(),
   highestEducation: z.string().optional(),
   schoolAttended: z.string().optional(),
@@ -72,17 +75,16 @@ const memberFormSchema = z.object({
   workAddress: z.string().optional(),
   dateJoinedChurch: z.string().optional(),
   membershipStatus: z.string().default(MembershipStatus.ACTIVE),
-  membershipType: z.string().default(MembershipType.MEMBER),
-  baptismStatus: z.string().default(BaptismStatus.UNKNOWN),
+  membershipType: z.string().default(MembershipType.BAPTISM),
   baptizedDate: z.string().optional(),
   previousChurch: z.string().optional(),
-  firstVisitDate: z.string().optional(),
-  assignedSmallGroup: z.string().optional(),
+  churchOrganization: z.string().optional(),
+  membershipCategory: z.string().optional(),
+  shepherdingGroup: z.string().optional(),
+  confirmationDate: z.string().optional(),
   serviceAttendanceStatus: z.string().default(ServiceAttendanceStatus.REGULAR),
-  ministriesJoined: z.string().optional(),
-  ministryRole: z.string().optional(),
+  ministryRoles: z.string().optional(),
   volunteerStatus: z.string().optional(),
-  leaderName: z.string().optional(),
   trainingCompleted: z.string().optional(),
   notes: z.string().optional(),
   remarks: z.string().optional(),
@@ -168,6 +170,20 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
   const [error, setError] = useState<string | null>(null);
   const [addrRegion, setAddrRegion] = useState("");
   const [addrProvince, setAddrProvince] = useState("");
+  const [childEntries, setChildEntries] = useState<Array<{ name: string; memberId: string }>>(() => {
+    try {
+      return JSON.parse((member as Record<string, unknown> | undefined)?.childrenLinks as string ?? "[]") as Array<{ name: string; memberId: string }>;
+    } catch {
+      return [];
+    }
+  });
+  const [ministryRoleEntries, setMinistryRoleEntries] = useState<Array<{ ministry: string; role: string; periodFrom: string; periodTo: string; status: string }>>(() => {
+    try {
+      return JSON.parse((member as Record<string, unknown> | undefined)?.ministryRoles as string ?? "[]") as Array<{ ministry: string; role: string; periodFrom: string; periodTo: string; status: string }>;
+    } catch {
+      return [];
+    }
+  });
 
   const {
     register,
@@ -198,12 +214,14 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       emergencyContactNumber: member?.emergencyContactNumber ?? "",
       spouseName: member?.spouseName ?? "",
       weddingDate: member?.weddingDate ?? "",
-      childrenNames: member?.childrenNames ?? "",
-      childCount: member?.childCount ?? 0,
-      parentsName: member?.parentsName ?? "",
+      fatherName: (member as Record<string, unknown> | undefined)?.fatherName as string ?? "",
+      fatherMemberId: (member as Record<string, unknown> | undefined)?.fatherMemberId as string ?? "",
+      fatherDeceasedDate: (member as Record<string, unknown> | undefined)?.fatherDeceasedDate as string ?? "",
+      motherName: (member as Record<string, unknown> | undefined)?.motherName as string ?? "",
+      motherMemberId: (member as Record<string, unknown> | undefined)?.motherMemberId as string ?? "",
+      motherDeceasedDate: (member as Record<string, unknown> | undefined)?.motherDeceasedDate as string ?? "",
+      childrenLinks: (member as Record<string, unknown> | undefined)?.childrenLinks as string ?? "",
       guardian: member?.guardian ?? "",
-      householdGroup: member?.householdGroup ?? "",
-      dependents: member?.dependents ?? 0,
       deceasedDate: member?.deceasedDate ?? "",
       highestEducation: member?.highestEducation ?? "",
       schoolAttended: member?.schoolAttended ?? "",
@@ -214,17 +232,16 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       workAddress: member?.workAddress ?? "",
       dateJoinedChurch: member?.dateJoinedChurch ?? "",
       membershipStatus: member?.membershipStatus ?? MembershipStatus.ACTIVE,
-      membershipType: member?.membershipType ?? MembershipType.MEMBER,
-      baptismStatus: member?.baptismStatus ?? BaptismStatus.UNKNOWN,
+      membershipType: member?.membershipType ?? MembershipType.BAPTISM,
       baptizedDate: member?.baptizedDate ?? "",
       previousChurch: member?.previousChurch ?? "",
-      firstVisitDate: member?.firstVisitDate ?? "",
-      assignedSmallGroup: member?.assignedSmallGroup ?? "",
+      churchOrganization: (member as Record<string, unknown> | undefined)?.churchOrganization as string ?? "",
+      membershipCategory: (member as Record<string, unknown> | undefined)?.membershipCategory as string ?? "",
+      shepherdingGroup: (member as Record<string, unknown> | undefined)?.shepherdingGroup as string ?? "",
+      confirmationDate: (member as Record<string, unknown> | undefined)?.confirmationDate as string ?? "",
       serviceAttendanceStatus: member?.serviceAttendanceStatus ?? ServiceAttendanceStatus.REGULAR,
-      ministriesJoined: member?.ministriesJoined ?? "",
-      ministryRole: member?.ministryRole ?? "",
+      ministryRoles: (member as Record<string, unknown> | undefined)?.ministryRoles as string ?? "",
       volunteerStatus: member?.volunteerStatus ?? "",
-      leaderName: member?.leaderName ?? "",
       trainingCompleted: member?.trainingCompleted ?? "",
       notes: member?.notes ?? "",
       remarks: member?.remarks ?? "",
@@ -274,12 +291,14 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       civilStatus: values.civilStatus || undefined,
       birthDate: values.birthDate || undefined,
       weddingDate: values.weddingDate || undefined,
+      fatherDeceasedDate: values.fatherDeceasedDate || undefined,
+      motherDeceasedDate: values.motherDeceasedDate || undefined,
       baptizedDate: values.baptizedDate || undefined,
+      confirmationDate: values.confirmationDate || undefined,
       deceasedDate: values.deceasedDate || undefined,
       dateJoinedChurch: values.dateJoinedChurch || undefined,
-      firstVisitDate: values.firstVisitDate || undefined,
-      childrenNames: values.childrenNames || "",
-      ministriesJoined: values.ministriesJoined || "",
+      childrenLinks: JSON.stringify(childEntries),
+      ministryRoles: JSON.stringify(ministryRoleEntries),
       trainingCompleted: values.trainingCompleted || "",
     };
 
@@ -519,8 +538,10 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
             <div className="space-y-5">
               <div>
                 <h2 className="text-base font-semibold text-[var(--ink)]">Family Information</h2>
-                <p className="mt-0.5 text-sm text-[var(--muted)]">Details about immediate family members.</p>
+                <p className="mt-0.5 text-sm text-[var(--muted)]">Details about immediate family members and relations.</p>
               </div>
+
+              {/* Spouse */}
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Spouse Name">
                   <Input placeholder="Full name of spouse" {...register("spouseName")} />
@@ -528,28 +549,105 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 <Field label="Wedding Date">
                   <Input type="date" {...register("weddingDate")} />
                 </Field>
-                <Field label="Number of Children">
-                  <Input type="number" min="0" placeholder="0" {...register("childCount", { valueAsNumber: true })} />
-                </Field>
-                <Field label="Number of Dependents">
-                  <Input type="number" min="0" placeholder="0" {...register("dependents", { valueAsNumber: true })} />
-                </Field>
-                <Field label="Parent(s) Name">
-                  <Input placeholder="Father and mother's name" {...register("parentsName")} />
-                </Field>
+              </div>
+
+              {/* Father */}
+              <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-subtle)] p-4 space-y-3">
+                <p className="text-[13px] font-medium text-[var(--ink)]">Father</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Field label="Father's Name">
+                    <Input placeholder="Full name" {...register("fatherName")} />
+                  </Field>
+                  <Field label="Father's Member ID" hint="Link to existing member record.">
+                    <Input placeholder="e.g. M-0001" {...register("fatherMemberId")} />
+                  </Field>
+                  <Field label="Father's Date of Death">
+                    <Input type="date" {...register("fatherDeceasedDate")} />
+                  </Field>
+                </div>
+              </div>
+
+              {/* Mother */}
+              <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-subtle)] p-4 space-y-3">
+                <p className="text-[13px] font-medium text-[var(--ink)]">Mother</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Field label="Mother's Name">
+                    <Input placeholder="Full name" {...register("motherName")} />
+                  </Field>
+                  <Field label="Mother's Member ID" hint="Link to existing member record.">
+                    <Input placeholder="e.g. M-0002" {...register("motherMemberId")} />
+                  </Field>
+                  <Field label="Mother's Date of Death">
+                    <Input type="date" {...register("motherDeceasedDate")} />
+                  </Field>
+                </div>
+              </div>
+
+              {/* Children */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[13px] font-medium text-[var(--ink)]">Children</p>
+                  <button
+                    type="button"
+                    onClick={() => setChildEntries((prev) => [...prev, { name: "", memberId: "" }])}
+                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--line)] bg-white px-2.5 py-1 text-[12px] font-medium text-[var(--accent)] hover:bg-[var(--sand)]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add child
+                  </button>
+                </div>
+                {childEntries.length === 0 && (
+                  <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-3 text-[13px] text-[var(--muted)]">
+                    No children added. Click &ldquo;Add child&rdquo; to link family members.
+                  </p>
+                )}
+                <div className="space-y-2">
+                  {childEntries.map((child, index) => (
+                    <div key={index} className="flex items-start gap-2 rounded-lg border border-[var(--line)] bg-white p-3">
+                      <div className="grid flex-1 gap-2 sm:grid-cols-2">
+                        <Field label="Child's Name">
+                          <Input
+                            placeholder="Full name"
+                            value={child.name}
+                            onChange={(e) => {
+                              const updated = [...childEntries];
+                              updated[index] = { ...updated[index], name: e.target.value };
+                              setChildEntries(updated);
+                            }}
+                          />
+                        </Field>
+                        <Field label="Member ID (optional)" hint="Link to existing member record.">
+                          <Input
+                            placeholder="e.g. M-0005"
+                            value={child.memberId}
+                            onChange={(e) => {
+                              const updated = [...childEntries];
+                              updated[index] = { ...updated[index], memberId: e.target.value };
+                              setChildEntries(updated);
+                            }}
+                          />
+                        </Field>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setChildEntries((prev) => prev.filter((_, i) => i !== index))}
+                        className="mt-6 rounded-lg p-1.5 text-[var(--muted)] hover:bg-red-50 hover:text-red-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Guardian">
                   <Input placeholder="If applicable" {...register("guardian")} />
                 </Field>
-                <Field label="Household Group">
-                  <Input placeholder="e.g. Young Families" {...register("householdGroup")} />
-                </Field>
-                <Field label="Date of Death">
+                <Field label="Date of Death" hint="For the member themselves.">
                   <Input type="date" {...register("deceasedDate")} />
                 </Field>
               </div>
-              <Field label="Children's Names" hint="Separate multiple names with commas.">
-                <Textarea rows={2} placeholder="e.g. John Jr., Mary Grace, Samuel" {...register("childrenNames")} />
-              </Field>
             </div>
           )}
 
@@ -607,9 +705,6 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 <Field label="Date Joined Church">
                   <Input type="date" {...register("dateJoinedChurch")} />
                 </Field>
-                <Field label="First Visit Date">
-                  <Input type="date" {...register("firstVisitDate")} />
-                </Field>
                 <Field label="Membership Status">
                   <Select {...register("membershipStatus")}>
                     {Object.values(MembershipStatus).map((s) => (
@@ -619,26 +714,39 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 </Field>
                 <Field label="Membership Type">
                   <Select {...register("membershipType")}>
-                    {Object.values(MembershipType).map((t) => (
+                    <option value="">Select type</option>
+                    {(["BAPTISM", "CONFIRMATION", "TRANSFER", "RESTORATION"] as const).map((t) => (
                       <option key={t} value={t}>{titleize(t)}</option>
                     ))}
                   </Select>
                 </Field>
-                <Field label="Baptism Status">
-                  <Select {...register("baptismStatus")}>
-                    {Object.values(BaptismStatus).map((b) => (
-                      <option key={b} value={b}>{titleize(b)}</option>
+                <Field label="Membership Category">
+                  <Select {...register("membershipCategory")}>
+                    <option value="">Select category</option>
+                    {["Regular", "Associate", "Affiliate", "Honorary"].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Church Organization">
+                  <Select {...register("churchOrganization")}>
+                    <option value="">Select organization</option>
+                    {["Children", "Church Worker", "CYF", "CYAF", "UCM", "CWA"].map((o) => (
+                      <option key={o} value={o}>{o}</option>
                     ))}
                   </Select>
                 </Field>
                 <Field label="Date Baptized">
                   <Input type="date" {...register("baptizedDate")} />
                 </Field>
+                <Field label="Confirmation Date">
+                  <Input type="date" {...register("confirmationDate")} />
+                </Field>
                 <Field label="Previous Church">
                   <Input placeholder="Name of former church" {...register("previousChurch")} />
                 </Field>
-                <Field label="Assigned Small Group">
-                  <Input placeholder="e.g. Young Families, Singles" {...register("assignedSmallGroup")} />
+                <Field label="Shepherding Group">
+                  <Input placeholder="e.g. Young Families, Singles" {...register("shepherdingGroup")} />
                 </Field>
                 <Field label="Service Attendance">
                   <Select {...register("serviceAttendanceStatus")}>
@@ -665,10 +773,104 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 <h2 className="text-base font-semibold text-[var(--ink)]">Ministry Involvement</h2>
                 <p className="mt-0.5 text-sm text-[var(--muted)]">Service roles and volunteer activities.</p>
               </div>
+
+              {/* Ministry Roles */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[13px] font-medium text-[var(--ink)]">Ministry Roles</p>
+                  <button
+                    type="button"
+                    onClick={() => setMinistryRoleEntries((prev) => [...prev, { ministry: "", role: "", periodFrom: "", periodTo: "", status: "Active" }])}
+                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--line)] bg-white px-2.5 py-1 text-[12px] font-medium text-[var(--accent)] hover:bg-[var(--sand)]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add role
+                  </button>
+                </div>
+                {ministryRoleEntries.length === 0 && (
+                  <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-3 text-[13px] text-[var(--muted)]">
+                    No ministry roles added. Click &ldquo;Add role&rdquo; to record service history.
+                  </p>
+                )}
+                <div className="space-y-2">
+                  {ministryRoleEntries.map((entry, index) => (
+                    <div key={index} className="rounded-lg border border-[var(--line)] bg-white p-3">
+                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                        <Field label="Ministry">
+                          <Input
+                            placeholder="e.g. Worship"
+                            value={entry.ministry}
+                            onChange={(e) => {
+                              const updated = [...ministryRoleEntries];
+                              updated[index] = { ...updated[index], ministry: e.target.value };
+                              setMinistryRoleEntries(updated);
+                            }}
+                          />
+                        </Field>
+                        <Field label="Role">
+                          <Input
+                            placeholder="e.g. Worship Leader"
+                            value={entry.role}
+                            onChange={(e) => {
+                              const updated = [...ministryRoleEntries];
+                              updated[index] = { ...updated[index], role: e.target.value };
+                              setMinistryRoleEntries(updated);
+                            }}
+                          />
+                        </Field>
+                        <Field label="Period From">
+                          <Input
+                            type="date"
+                            value={entry.periodFrom}
+                            onChange={(e) => {
+                              const updated = [...ministryRoleEntries];
+                              updated[index] = { ...updated[index], periodFrom: e.target.value };
+                              setMinistryRoleEntries(updated);
+                            }}
+                          />
+                        </Field>
+                        <Field label="Period To">
+                          <Input
+                            type="date"
+                            value={entry.periodTo}
+                            onChange={(e) => {
+                              const updated = [...ministryRoleEntries];
+                              updated[index] = { ...updated[index], periodTo: e.target.value };
+                              setMinistryRoleEntries(updated);
+                            }}
+                          />
+                        </Field>
+                        <Field label="Status">
+                          <Select
+                            value={entry.status}
+                            onChange={(e) => {
+                              const updated = [...ministryRoleEntries];
+                              updated[index] = { ...updated[index], status: e.target.value };
+                              setMinistryRoleEntries(updated);
+                            }}
+                          >
+                            {["Active", "Inactive", "Completed", "On Leave"].map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </Select>
+                        </Field>
+                      </div>
+                      <div className="mt-2 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setMinistryRoleEntries((prev) => prev.filter((_, i) => i !== index))}
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[12px] text-[var(--muted)] hover:bg-red-50 hover:text-red-600"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Ministry Role">
-                  <Input placeholder="e.g. Worship Leader, Usher" {...register("ministryRole")} />
-                </Field>
                 <Field label="Volunteer Status">
                   <Select {...register("volunteerStatus")}>
                     <option value="">Select status</option>
@@ -677,13 +879,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                     ))}
                   </Select>
                 </Field>
-                <Field label="Cell Group Leader">
-                  <Input placeholder="Leader's name" {...register("leaderName")} />
-                </Field>
               </div>
-              <Field label="Ministries Joined" hint="Separate multiple ministries with commas.">
-                <Textarea rows={2} placeholder="e.g. Worship, Ushering, Children's Ministry" {...register("ministriesJoined")} />
-              </Field>
               <Field label="Training Completed" hint="Separate multiple trainings with commas.">
                 <Textarea rows={2} placeholder="e.g. New Members Class, Discipleship 101" {...register("trainingCompleted")} />
               </Field>
@@ -723,11 +919,12 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 <SummarySection title="Family">
                   <SummaryRow label="Spouse" value={values.spouseName} />
                   <SummaryRow label="Wedding Date" value={values.weddingDate} />
-                  <SummaryRow label="Children" value={values.childCount as number} />
-                  <SummaryRow label="Children Names" value={values.childrenNames} />
-                  <SummaryRow label="Parents" value={values.parentsName} />
+                  <SummaryRow label="Father" value={values.fatherName} />
+                  <SummaryRow label="Father Member ID" value={values.fatherMemberId} />
+                  <SummaryRow label="Mother" value={values.motherName} />
+                  <SummaryRow label="Mother Member ID" value={values.motherMemberId} />
+                  <SummaryRow label="Children" value={childEntries.map((c) => c.name || "(unnamed)").join(", ")} />
                   <SummaryRow label="Guardian" value={values.guardian} />
-                  <SummaryRow label="Household Group" value={values.householdGroup} />
                 </SummarySection>
                 <SummarySection title="Education & Work">
                   <SummaryRow label="Education" value={values.highestEducation} />
@@ -739,20 +936,19 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 </SummarySection>
                 <SummarySection title="Church">
                   <SummaryRow label="Date Joined" value={values.dateJoinedChurch} />
-                  <SummaryRow label="First Visit" value={values.firstVisitDate} />
                   <SummaryRow label="Membership Status" value={values.membershipStatus ? titleize(values.membershipStatus) : undefined} />
                   <SummaryRow label="Membership Type" value={values.membershipType ? titleize(values.membershipType) : undefined} />
-                  <SummaryRow label="Baptism" value={values.baptismStatus ? titleize(values.baptismStatus) : undefined} />
+                  <SummaryRow label="Membership Category" value={values.membershipCategory} />
+                  <SummaryRow label="Church Organization" value={values.churchOrganization} />
                   <SummaryRow label="Baptized Date" value={values.baptizedDate} />
+                  <SummaryRow label="Confirmation Date" value={values.confirmationDate} />
                   <SummaryRow label="Previous Church" value={values.previousChurch} />
-                  <SummaryRow label="Small Group" value={values.assignedSmallGroup} />
+                  <SummaryRow label="Shepherding Group" value={values.shepherdingGroup} />
                   <SummaryRow label="Attendance" value={values.serviceAttendanceStatus ? titleize(values.serviceAttendanceStatus) : undefined} />
                 </SummarySection>
                 <SummarySection title="Ministry">
-                  <SummaryRow label="Ministries" value={values.ministriesJoined} />
-                  <SummaryRow label="Role" value={values.ministryRole} />
+                  <SummaryRow label="Roles" value={ministryRoleEntries.map((r) => `${r.ministry}: ${r.role}`).join("; ")} />
                   <SummaryRow label="Volunteer Status" value={values.volunteerStatus} />
-                  <SummaryRow label="Leader" value={values.leaderName} />
                   <SummaryRow label="Training" value={values.trainingCompleted} />
                   <SummaryRow label="Notes" value={values.notes} />
                 </SummarySection>
@@ -811,17 +1007,14 @@ export function mapMemberToForm(member: Record<string, unknown> & { id: string }
     emergencyContactNumber: String(member.emergencyContactNumber ?? ""),
     spouseName: String(member.spouseName ?? ""),
     weddingDate: formatDateInput(member.weddingDate as string | Date | null),
-    childrenNames:
-      typeof member.childrenNames === "string"
-        ? member.childrenNames
-        : Array.isArray(member.childrenNames)
-          ? (member.childrenNames as string[]).join(", ")
-          : "",
-    childCount: Number(member.childCount ?? 0),
-    parentsName: String(member.parentsName ?? ""),
+    fatherName: String(member.fatherName ?? ""),
+    fatherMemberId: String(member.fatherMemberId ?? ""),
+    fatherDeceasedDate: formatDateInput(member.fatherDeceasedDate as string | Date | null),
+    motherName: String(member.motherName ?? ""),
+    motherMemberId: String(member.motherMemberId ?? ""),
+    motherDeceasedDate: formatDateInput(member.motherDeceasedDate as string | Date | null),
+    childrenLinks: typeof member.childrenLinks === "string" ? member.childrenLinks : "[]",
     guardian: String(member.guardian ?? ""),
-    householdGroup: String(member.householdGroup ?? ""),
-    dependents: Number(member.dependents ?? 0),
     deceasedDate: formatDateInput(member.deceasedDate as string | Date | null),
     highestEducation: String(member.highestEducation ?? ""),
     schoolAttended: String(member.schoolAttended ?? ""),
@@ -832,24 +1025,18 @@ export function mapMemberToForm(member: Record<string, unknown> & { id: string }
     workAddress: String(member.workAddress ?? ""),
     dateJoinedChurch: formatDateInput(member.dateJoinedChurch as string | Date | null),
     membershipStatus: String(member.membershipStatus ?? MembershipStatus.ACTIVE),
-    membershipType: String(member.membershipType ?? MembershipType.MEMBER),
-    baptismStatus: String(member.baptismStatus ?? BaptismStatus.UNKNOWN),
+    membershipType: String(member.membershipType ?? MembershipType.BAPTISM),
     baptizedDate: formatDateInput(member.baptizedDate as string | Date | null),
     previousChurch: String(member.previousChurch ?? ""),
-    firstVisitDate: formatDateInput(member.firstVisitDate as string | Date | null),
-    assignedSmallGroup: String(member.assignedSmallGroup ?? ""),
+    churchOrganization: String(member.churchOrganization ?? ""),
+    membershipCategory: String(member.membershipCategory ?? ""),
+    shepherdingGroup: String(member.shepherdingGroup ?? ""),
+    confirmationDate: formatDateInput(member.confirmationDate as string | Date | null),
     serviceAttendanceStatus: String(
       member.serviceAttendanceStatus ?? ServiceAttendanceStatus.REGULAR,
     ),
-    ministriesJoined:
-      typeof member.ministriesJoined === "string"
-        ? member.ministriesJoined
-        : Array.isArray(member.ministriesJoined)
-          ? (member.ministriesJoined as string[]).join(", ")
-          : "",
-    ministryRole: String(member.ministryRole ?? ""),
+    ministryRoles: typeof member.ministryRoles === "string" ? member.ministryRoles : "[]",
     volunteerStatus: String(member.volunteerStatus ?? ""),
-    leaderName: String(member.leaderName ?? ""),
     trainingCompleted:
       typeof member.trainingCompleted === "string"
         ? member.trainingCompleted

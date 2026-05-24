@@ -21,7 +21,7 @@ export const siteConfig: SiteConfig = {
 
 export const publicNavigation = [
   { href: "/", label: "Home" },
-  { href: "/about", label: "About Church" },
+  { href: "/about", label: "About Us" },
   { href: "/ministries", label: "Ministries" },
   { href: "/programs", label: "Programs" },
   { href: "/events", label: "Events" },

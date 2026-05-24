@@ -82,8 +82,9 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <DetailRow label="Spouse" value={member.spouseName} />
             <DetailRow label="Wedding date" value={formatDate(member.weddingDate)} />
-            <DetailRow label="Children" value={parseCsv(member.childrenNames).join(", ")} />
-            <DetailRow label="Parents" value={member.parentsName} />
+            <DetailRow label="Father" value={member.fatherName} />
+            <DetailRow label="Mother" value={member.motherName} />
+            <DetailRow label="Children" value={(() => { try { return (JSON.parse(member.childrenLinks ?? "[]") as Array<{ name: string }>).map((c) => c.name).filter(Boolean).join(", "); } catch { return ""; } })()} />
             <DetailRow label="Occupation" value={member.occupation} />
             <DetailRow label="Company" value={member.companyName} />
             <DetailRow label="Employment status" value={member.employmentStatus} />
@@ -95,10 +96,11 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <DetailRow label="Joined church" value={formatDate(member.dateJoinedChurch)} />
             <DetailRow label="Membership type" value={member.membershipType} />
-            <DetailRow label="Baptism status" value={member.baptismStatus} />
+            <DetailRow label="Membership category" value={member.membershipCategory} />
+            <DetailRow label="Church organization" value={member.churchOrganization} />
             <DetailRow label="Baptized date" value={formatDate(member.baptizedDate)} />
-            <DetailRow label="First visit" value={formatDate(member.firstVisitDate)} />
-            <DetailRow label="Small group" value={member.assignedSmallGroup} />
+            <DetailRow label="Confirmation date" value={formatDate(member.confirmationDate)} />
+            <DetailRow label="Shepherding group" value={member.shepherdingGroup} />
             <DetailRow label="Attendance" value={member.serviceAttendanceStatus} />
             <DetailRow label="Previous church" value={member.previousChurch} />
           </div>
@@ -106,10 +108,8 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
         <Card>
           <h2 className="text-base font-semibold text-[var(--ink)]">Ministry information</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <DetailRow label="Ministries" value={parseCsv(member.ministriesJoined).join(", ")} />
-            <DetailRow label="Ministry role" value={member.ministryRole} />
+            <DetailRow label="Ministry roles" value={(() => { try { return (JSON.parse(member.ministryRoles ?? "[]") as Array<{ ministry: string; role: string }>).map((r) => `${r.ministry}: ${r.role}`).filter((r) => r !== ": ").join("; "); } catch { return ""; } })()} />
             <DetailRow label="Volunteer status" value={member.volunteerStatus} />
-            <DetailRow label="Leader" value={member.leaderName} />
             <DetailRow label="Training completed" value={parseCsv(member.trainingCompleted).join(", ")} />
             <DetailRow label="Notes" value={member.notes} />
             <DetailRow label="Remarks" value={member.remarks} />

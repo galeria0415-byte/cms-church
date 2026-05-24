@@ -44,20 +44,10 @@ enum MembershipStatus {
 }
 
 enum MembershipType {
-  MEMBER
-  REGULAR
-  ASSOCIATE
-  YOUTH
-  CHILD
-  SENIOR
-}
-
-enum BaptismStatus {
-  NOT_BAPTIZED
-  WATER_BAPTIZED
-  SPIRIT_BAPTIZED
-  BOTH
-  UNKNOWN
+  BAPTISM
+  CONFIRMATION
+  TRANSFER
+  RESTORATION
 }
 
 enum ServiceAttendanceStatus {
@@ -144,12 +134,14 @@ model Member {
   emergencyContactNumber   String?
   spouseName               String?
   weddingDate              DateTime?
-  childrenNames            String?                  @db.Text
-  childCount               Int                     @default(0)
-  parentsName              String?
+  fatherName               String?
+  fatherMemberId           String?
+  fatherDeceasedDate       DateTime?
+  motherName               String?
+  motherMemberId           String?
+  motherDeceasedDate       DateTime?
+  childrenLinks            String?                  @db.Text
   guardian                 String?
-  householdGroup           String?
-  dependents               Int                     @default(0)
   deceasedDate             DateTime?
   highestEducation         String?
   schoolAttended           String?
@@ -160,17 +152,16 @@ model Member {
   workAddress              String?
   dateJoinedChurch         DateTime?
   membershipStatus         MembershipStatus        @default(ACTIVE)
-  membershipType           MembershipType          @default(MEMBER)
-  baptismStatus            BaptismStatus           @default(UNKNOWN)
+  membershipType           MembershipType          @default(BAPTISM)
   baptizedDate             DateTime?
   previousChurch           String?
-  firstVisitDate           DateTime?
-  assignedSmallGroup       String?
+  churchOrganization       String?
+  membershipCategory       String?
+  shepherdingGroup         String?
+  confirmationDate         DateTime?
   serviceAttendanceStatus  ServiceAttendanceStatus @default(REGULAR)
-  ministriesJoined         String?                  @db.Text
-  ministryRole             String?
+  ministryRoles            String?                  @db.Text
   volunteerStatus          String?
-  leaderName               String?
   trainingCompleted        String?                  @db.Text
   notes                    String?
   remarks                  String?
@@ -185,7 +176,7 @@ model Member {
   @@index([birthDate])
   @@index([weddingDate])
   @@index([deceasedDate])
-  @@index([assignedSmallGroup])
+  @@index([shepherdingGroup])
 }
 
 model Post {

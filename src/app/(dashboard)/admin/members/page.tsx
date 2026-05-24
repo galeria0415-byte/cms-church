@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { prisma } from "@/lib/prisma";
-import { formatDate, fullName, parseCsv, titleize } from "@/lib/utils";
+import { formatDate, fullName, titleize } from "@/lib/utils";
 
 type SearchParams = Promise<{
   q?: string;
@@ -36,8 +36,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Sear
             { firstName: { contains: query, mode: "insensitive" as const } },
             { lastName: { contains: query, mode: "insensitive" as const } },
             { memberId: { contains: query, mode: "insensitive" as const } },
-            { ministriesJoined: { contains: query } },
-            { assignedSmallGroup: { contains: query, mode: "insensitive" as const } },
+            { shepherdingGroup: { contains: query, mode: "insensitive" as const } },
           ],
         }
       : {}),
@@ -106,7 +105,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Sear
                 <tr>
                   <th className="px-5 py-4 font-medium">Member</th>
                   <th className="px-5 py-4 font-medium">Status</th>
-                  <th className="px-5 py-4 font-medium">Ministries</th>
+                  <th className="px-5 py-4 font-medium">Shepherding Group</th>
                   <th className="px-5 py-4 font-medium">Dates</th>
                   <th className="px-5 py-4 font-medium">Actions</th>
                 </tr>
@@ -134,7 +133,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Sear
                       <Badge>{titleize(member.membershipStatus)}</Badge>
                       <p className="mt-2 text-sm text-[var(--muted)]">{titleize(member.recordStatus)}</p>
                     </td>
-                    <td className="px-5 py-5 text-[var(--muted)]">{parseCsv(member.ministriesJoined).join(", ") || "-"}</td>
+                    <td className="px-5 py-5 text-[var(--muted)]">{member.shepherdingGroup ?? "-"}</td>
                     <td className="px-5 py-5 text-[var(--muted)]">
                       <p>Birth: {formatDate(member.birthDate, "MMM d, yyyy")}</p>
                       <p>Joined: {formatDate(member.dateJoinedChurch, "MMM d, yyyy")}</p>
