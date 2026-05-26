@@ -35,7 +35,7 @@ export async function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full px-4 py-2 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--surface-subtle)] hover:text-[var(--accent)]"
+              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--surface-subtle)] hover:text-[var(--accent)]"
             >
               {item.label}
             </Link>

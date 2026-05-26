@@ -80,14 +80,20 @@ export type BibleChapterData = {
   book_name: string;
   book_nr: number;
   chapter_nr: number;
+  translation?: string;
   verses: Record<string, BibleVerseData>;
 };
 
 export async function fetchBibleChapter(
   bookNumber: number,
   chapterNumber: number,
+  preferredTranslation = "web",
 ): Promise<BibleChapterData | null> {
-  for (const translation of ["gnb", "web", "kjv"]) {
+  const toTry = [
+    preferredTranslation,
+    ...["web", "kjv"].filter((t) => t !== preferredTranslation),
+  ];
+  for (const translation of toTry) {
     try {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), 8000);
@@ -97,7 +103,9 @@ export async function fetchBibleChapter(
       );
       clearTimeout(id);
       if (res.ok) {
-        return (await res.json()) as BibleChapterData;
+        const data = (await res.json()) as BibleChapterData;
+        data.translation = translation;
+        return data;
       }
     } catch {
       // try next translation
