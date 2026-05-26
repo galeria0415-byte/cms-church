@@ -14,14 +14,16 @@ const TOPICS: TopicDef[] = [
   {
     id: "love", name: "Love", emoji: "❤️", bg: "bg-rose-100 text-rose-700",
     verses: [
-      { book: 43, chapter: 3, verse: 16 },   // John 3:16
+      { book: 46, chapter: 16, verse: 14 },  // 1 Cor 16:14
       { book: 46, chapter: 13, verse: 4 },   // 1 Cor 13:4
-      { book: 46, chapter: 13, verse: 7 },   // 1 Cor 13:7
+      { book: 51, chapter: 3, verse: 14 },   // Col 3:14
       { book: 46, chapter: 13, verse: 13 },  // 1 Cor 13:13
-      { book: 62, chapter: 4, verse: 8 },    // 1 John 4:8
-      { book: 62, chapter: 4, verse: 19 },   // 1 John 4:19
       { book: 43, chapter: 15, verse: 13 },  // John 15:13
-      { book: 40, chapter: 22, verse: 37 },  // Matt 22:37
+      { book: 43, chapter: 3, verse: 16 },   // John 3:16
+      { book: 62, chapter: 4, verse: 7 },    // 1 John 4:7
+      { book: 60, chapter: 4, verse: 8 },    // 1 Pet 4:8
+      { book: 43, chapter: 14, verse: 15 },  // John 14:15
+      { book: 62, chapter: 4, verse: 19 },   // 1 John 4:19
     ],
   },
   {
@@ -37,36 +39,34 @@ const TOPICS: TopicDef[] = [
     ],
   },
   {
-    id: "sacrifice", name: "Sacrifice", emoji: "✝️", bg: "bg-blue-100 text-blue-700",
+    id: "inspirational", name: "Inspirational", emoji: "🌟", bg: "bg-yellow-100 text-yellow-700",
     verses: [
-      { book: 43, chapter: 3, verse: 16 },   // John 3:16
-      { book: 45, chapter: 5, verse: 8 },    // Rom 5:8
-      { book: 43, chapter: 15, verse: 13 },  // John 15:13
-      { book: 49, chapter: 5, verse: 2 },    // Eph 5:2
-      { book: 60, chapter: 2, verse: 24 },   // 1 Pet 2:24
-      { book: 58, chapter: 9, verse: 26 },   // Heb 9:26
+      { book: 24, chapter: 29, verse: 11 },  // Jer 29:11
+      { book: 45, chapter: 8, verse: 28 },   // Rom 8:28
+      { book: 6, chapter: 1, verse: 9 },     // Josh 1:9
+      { book: 50, chapter: 4, verse: 13 },   // Phil 4:13
+      { book: 23, chapter: 41, verse: 10 },  // Isa 41:10
+      { book: 45, chapter: 15, verse: 13 },  // Rom 15:13
+      { book: 19, chapter: 37, verse: 4 },   // Ps 37:4
+      { book: 43, chapter: 16, verse: 33 },  // John 16:33
+      { book: 40, chapter: 11, verse: 28 },  // Matt 11:28
+      { book: 19, chapter: 34, verse: 8 },   // Ps 34:8
     ],
   },
   {
-    id: "lent", name: "Lent", emoji: "🌿", bg: "bg-lime-100 text-lime-700",
+    id: "worry", name: "Worry & Anxiety", emoji: "😟", bg: "bg-blue-100 text-blue-700",
     verses: [
-      { book: 40, chapter: 4, verse: 4 },    // Matt 4:4
-      { book: 29, chapter: 2, verse: 12 },   // Joel 2:12
-      { book: 19, chapter: 51, verse: 10 },  // Ps 51:10
-      { book: 23, chapter: 58, verse: 6 },   // Isa 58:6
-      { book: 40, chapter: 6, verse: 16 },   // Matt 6:16
-      { book: 40, chapter: 6, verse: 17 },   // Matt 6:17
-    ],
-  },
-  {
-    id: "sin", name: "Sin", emoji: "⚠️", bg: "bg-yellow-100 text-yellow-700",
-    verses: [
-      { book: 45, chapter: 3, verse: 23 },   // Rom 3:23
-      { book: 45, chapter: 6, verse: 23 },   // Rom 6:23
-      { book: 62, chapter: 1, verse: 8 },    // 1 John 1:8
-      { book: 23, chapter: 59, verse: 2 },   // Isa 59:2
-      { book: 43, chapter: 8, verse: 34 },   // John 8:34
-      { book: 19, chapter: 51, verse: 5 },   // Ps 51:5
+      { book: 50, chapter: 4, verse: 6 },    // Phil 4:6
+      { book: 50, chapter: 4, verse: 7 },    // Phil 4:7
+      { book: 60, chapter: 5, verse: 7 },    // 1 Pet 5:7
+      { book: 43, chapter: 14, verse: 27 },  // John 14:27
+      { book: 55, chapter: 1, verse: 7 },    // 2 Tim 1:7
+      { book: 19, chapter: 55, verse: 22 },  // Ps 55:22
+      { book: 6, chapter: 1, verse: 9 },     // Josh 1:9
+      { book: 40, chapter: 6, verse: 34 },   // Matt 6:34
+      { book: 19, chapter: 94, verse: 19 },  // Ps 94:19
+      { book: 40, chapter: 11, verse: 28 },  // Matt 11:28
+      { book: 19, chapter: 56, verse: 3 },   // Ps 56:3
     ],
   },
   {
@@ -93,29 +93,48 @@ const TOPICS: TopicDef[] = [
     ],
   },
   {
-    id: "honesty", name: "Honesty", emoji: "⚖️", bg: "bg-teal-100 text-teal-700",
+    id: "grief", name: "Grief", emoji: "😢", bg: "bg-indigo-100 text-indigo-700",
     verses: [
-      { book: 20, chapter: 12, verse: 22 },  // Prov 12:22
-      { book: 49, chapter: 4, verse: 25 },   // Eph 4:25
-      { book: 43, chapter: 8, verse: 32 },   // John 8:32
-      { book: 38, chapter: 8, verse: 16 },   // Zech 8:16
-      { book: 19, chapter: 119, verse: 160 },// Ps 119:160
-      { book: 20, chapter: 11, verse: 3 },   // Prov 11:3
+      { book: 19, chapter: 34, verse: 18 },  // Ps 34:18
+      { book: 40, chapter: 5, verse: 4 },    // Matt 5:4
+      { book: 66, chapter: 21, verse: 4 },   // Rev 21:4
+      { book: 43, chapter: 11, verse: 35 },  // John 11:35
+      { book: 19, chapter: 147, verse: 3 },  // Ps 147:3
+      { book: 47, chapter: 1, verse: 3 },    // 2 Cor 1:3
+      { book: 47, chapter: 1, verse: 4 },    // 2 Cor 1:4
+      { book: 45, chapter: 8, verse: 18 },   // Rom 8:18
+      { book: 19, chapter: 73, verse: 26 },  // Ps 73:26
     ],
   },
   {
-    id: "freedom", name: "Freedom", emoji: "🕊️", bg: "bg-sky-100 text-sky-700",
+    id: "comfort", name: "Comfort", emoji: "🕊️", bg: "bg-sky-100 text-sky-700",
     verses: [
-      { book: 43, chapter: 8, verse: 32 },   // John 8:32
-      { book: 48, chapter: 5, verse: 1 },    // Gal 5:1
-      { book: 45, chapter: 8, verse: 2 },    // Rom 8:2
-      { book: 47, chapter: 3, verse: 17 },   // 2 Cor 3:17
-      { book: 43, chapter: 8, verse: 36 },   // John 8:36
-      { book: 19, chapter: 119, verse: 45 }, // Ps 119:45
+      { book: 47, chapter: 1, verse: 3 },    // 2 Cor 1:3
+      { book: 47, chapter: 1, verse: 4 },    // 2 Cor 1:4
+      { book: 19, chapter: 23, verse: 4 },   // Ps 23:4
+      { book: 43, chapter: 14, verse: 27 },  // John 14:27
+      { book: 40, chapter: 11, verse: 28 },  // Matt 11:28
+      { book: 23, chapter: 40, verse: 1 },   // Isa 40:1
+      { book: 50, chapter: 4, verse: 7 },    // Phil 4:7
+      { book: 19, chapter: 34, verse: 18 },  // Ps 34:18
+      { book: 45, chapter: 8, verse: 38 },   // Rom 8:38
     ],
   },
   {
-    id: "joy", name: "Joy & Happiness", emoji: "😊", bg: "bg-yellow-100 text-yellow-700",
+    id: "friendship", name: "Friendship", emoji: "🤝", bg: "bg-emerald-100 text-emerald-700",
+    verses: [
+      { book: 20, chapter: 17, verse: 17 },  // Prov 17:17
+      { book: 20, chapter: 18, verse: 24 },  // Prov 18:24
+      { book: 43, chapter: 15, verse: 13 },  // John 15:13
+      { book: 20, chapter: 27, verse: 9 },   // Prov 27:9
+      { book: 20, chapter: 27, verse: 17 },  // Prov 27:17
+      { book: 52, chapter: 5, verse: 11 },   // 1 Thess 5:11
+      { book: 21, chapter: 4, verse: 9 },    // Eccl 4:9
+      { book: 43, chapter: 15, verse: 15 },  // John 15:15
+    ],
+  },
+  {
+    id: "joy", name: "Joy", emoji: "😊", bg: "bg-yellow-100 text-yellow-700",
     verses: [
       { book: 50, chapter: 4, verse: 4 },    // Phil 4:4
       { book: 19, chapter: 16, verse: 11 },  // Ps 16:11
@@ -129,24 +148,31 @@ const TOPICS: TopicDef[] = [
   {
     id: "forgiveness", name: "Forgiveness", emoji: "💝", bg: "bg-pink-100 text-pink-700",
     verses: [
-      { book: 40, chapter: 6, verse: 14 },   // Matt 6:14
       { book: 49, chapter: 4, verse: 32 },   // Eph 4:32
-      { book: 51, chapter: 3, verse: 13 },   // Col 3:13
+      { book: 41, chapter: 11, verse: 25 },  // Mark 11:25
       { book: 62, chapter: 1, verse: 9 },    // 1 John 1:9
+      { book: 40, chapter: 18, verse: 21 },  // Matt 18:21
+      { book: 40, chapter: 6, verse: 14 },   // Matt 6:14
+      { book: 51, chapter: 3, verse: 13 },   // Col 3:13
       { book: 19, chapter: 103, verse: 12 }, // Ps 103:12
       { book: 42, chapter: 23, verse: 34 },  // Luke 23:34
-      { book: 40, chapter: 18, verse: 21 },  // Matt 18:21
+      { book: 23, chapter: 1, verse: 18 },   // Isa 1:18
+      { book: 47, chapter: 5, verse: 17 },   // 2 Cor 5:17
+      { book: 33, chapter: 7, verse: 18 },   // Micah 7:18
     ],
   },
   {
-    id: "fear", name: "Overcoming Fear", emoji: "🛡️", bg: "bg-indigo-100 text-indigo-700",
+    id: "encouragement", name: "Encouragement", emoji: "✨", bg: "bg-teal-100 text-teal-700",
     verses: [
-      { book: 19, chapter: 23, verse: 4 },   // Ps 23:4
-      { book: 23, chapter: 41, verse: 10 },  // Isa 41:10
-      { book: 6, chapter: 1, verse: 9 },     // Josh 1:9
-      { book: 19, chapter: 27, verse: 1 },   // Ps 27:1
+      { book: 43, chapter: 16, verse: 33 },  // John 16:33
+      { book: 52, chapter: 5, verse: 11 },   // 1 Thess 5:11
+      { book: 58, chapter: 10, verse: 23 },  // Heb 10:23
       { book: 55, chapter: 1, verse: 7 },    // 2 Tim 1:7
-      { book: 50, chapter: 4, verse: 6 },    // Phil 4:6
+      { book: 19, chapter: 34, verse: 4 },   // Ps 34:4
+      { book: 45, chapter: 8, verse: 28 },   // Rom 8:28
+      { book: 23, chapter: 43, verse: 2 },   // Isa 43:2
+      { book: 19, chapter: 28, verse: 7 },   // Ps 28:7
+      { book: 46, chapter: 15, verse: 58 },  // 1 Cor 15:58
     ],
   },
   {
@@ -163,12 +189,15 @@ const TOPICS: TopicDef[] = [
   {
     id: "hope", name: "Hope", emoji: "🌅", bg: "bg-orange-100 text-orange-700",
     verses: [
-      { book: 45, chapter: 8, verse: 28 },   // Rom 8:28
       { book: 24, chapter: 29, verse: 11 },  // Jer 29:11
       { book: 45, chapter: 15, verse: 13 },  // Rom 15:13
-      { book: 19, chapter: 31, verse: 24 },  // Ps 31:24
+      { book: 60, chapter: 5, verse: 10 },   // 1 Pet 5:10
       { book: 58, chapter: 10, verse: 23 },  // Heb 10:23
+      { book: 45, chapter: 5, verse: 5 },    // Rom 5:5
+      { book: 50, chapter: 1, verse: 6 },    // Phil 1:6
+      { book: 19, chapter: 130, verse: 5 },  // Ps 130:5
       { book: 25, chapter: 3, verse: 22 },   // Lam 3:22
+      { book: 25, chapter: 3, verse: 23 },   // Lam 3:23
     ],
   },
   {
@@ -194,7 +223,7 @@ const TOPICS: TopicDef[] = [
     ],
   },
   {
-    id: "wisdom", name: "Wisdom", emoji: "📖", bg: "bg-yellow-100 text-yellow-700",
+    id: "wisdom", name: "Wisdom", emoji: "📖", bg: "bg-amber-100 text-amber-700",
     verses: [
       { book: 20, chapter: 3, verse: 5 },    // Prov 3:5
       { book: 59, chapter: 1, verse: 5 },    // James 1:5
@@ -216,26 +245,19 @@ const TOPICS: TopicDef[] = [
     ],
   },
   {
-    id: "patience", name: "Patience", emoji: "⏳", bg: "bg-amber-100 text-amber-700",
-    verses: [
-      { book: 59, chapter: 1, verse: 3 },    // James 1:3
-      { book: 59, chapter: 1, verse: 4 },    // James 1:4
-      { book: 45, chapter: 5, verse: 3 },    // Rom 5:3
-      { book: 45, chapter: 5, verse: 4 },    // Rom 5:4
-      { book: 58, chapter: 12, verse: 1 },   // Heb 12:1
-      { book: 19, chapter: 40, verse: 1 },   // Ps 40:1
-      { book: 45, chapter: 8, verse: 25 },   // Rom 8:25
-    ],
-  },
-  {
     id: "healing", name: "Healing", emoji: "💊", bg: "bg-red-100 text-red-700",
     verses: [
-      { book: 19, chapter: 103, verse: 2 },  // Ps 103:2
-      { book: 19, chapter: 103, verse: 3 },  // Ps 103:3
+      { book: 60, chapter: 2, verse: 24 },   // 1 Pet 2:24
+      { book: 23, chapter: 40, verse: 29 },  // Isa 40:29
+      { book: 19, chapter: 147, verse: 3 },  // Ps 147:3
+      { book: 59, chapter: 5, verse: 14 },   // James 5:14
       { book: 24, chapter: 17, verse: 14 },  // Jer 17:14
+      { book: 19, chapter: 103, verse: 2 },  // Ps 103:2
       { book: 23, chapter: 53, verse: 5 },   // Isa 53:5
-      { book: 59, chapter: 5, verse: 15 },   // James 5:15
+      { book: 64, chapter: 1, verse: 2 },    // 3 John 1:2
       { book: 19, chapter: 30, verse: 2 },   // Ps 30:2
+      { book: 24, chapter: 30, verse: 17 },  // Jer 30:17
+      { book: 20, chapter: 17, verse: 22 },  // Prov 17:22
     ],
   },
   {
@@ -243,10 +265,29 @@ const TOPICS: TopicDef[] = [
     verses: [
       { book: 50, chapter: 4, verse: 13 },   // Phil 4:13
       { book: 23, chapter: 40, verse: 31 },  // Isa 40:31
+      { book: 23, chapter: 41, verse: 10 },  // Isa 41:10
+      { book: 47, chapter: 12, verse: 9 },   // 2 Cor 12:9
       { book: 19, chapter: 46, verse: 1 },   // Ps 46:1
       { book: 49, chapter: 6, verse: 10 },   // Eph 6:10
-      { book: 47, chapter: 12, verse: 9 },   // 2 Cor 12:9
-      { book: 19, chapter: 28, verse: 7 },   // Ps 28:7
+      { book: 6, chapter: 1, verse: 9 },     // Josh 1:9
+      { book: 19, chapter: 73, verse: 26 },  // Ps 73:26
+      { book: 16, chapter: 8, verse: 10 },   // Neh 8:10
+      { book: 5, chapter: 31, verse: 6 },    // Deut 31:6
+      { book: 19, chapter: 27, verse: 1 },   // Ps 27:1
+    ],
+  },
+  {
+    id: "gods-promises", name: "God's Promises", emoji: "🌈", bg: "bg-purple-100 text-purple-700",
+    verses: [
+      { book: 24, chapter: 29, verse: 11 },  // Jer 29:11
+      { book: 50, chapter: 4, verse: 19 },   // Phil 4:19
+      { book: 58, chapter: 10, verse: 23 },  // Heb 10:23
+      { book: 47, chapter: 1, verse: 20 },   // 2 Cor 1:20
+      { book: 40, chapter: 28, verse: 20 },  // Matt 28:20
+      { book: 45, chapter: 8, verse: 28 },   // Rom 8:28
+      { book: 19, chapter: 34, verse: 8 },   // Ps 34:8
+      { book: 58, chapter: 13, verse: 5 },   // Heb 13:5
+      { book: 61, chapter: 1, verse: 4 },    // 2 Pet 1:4
     ],
   },
 ];
@@ -276,6 +317,7 @@ export function BibleReader() {
   const [selectedTopic, setSelectedTopic] = useState<TopicDef | null>(null);
   const [topicCards, setTopicCards] = useState<TopicCard[]>([]);
   const [topicLoading, setTopicLoading] = useState(false);
+  const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
 
   const go = useCallback(
     (book: number, chapter: number) => router.push(`/bible?book=${book}&chapter=${chapter}`),
@@ -296,6 +338,14 @@ export function BibleReader() {
       setLoading(false);
     });
   }, [bookNum, chapterNum, selectedTranslation]);
+
+  useEffect(() => {
+    if (!highlightedVerse || verses.length === 0) return;
+    const timer = setTimeout(() => {
+      document.getElementById(`verse-${highlightedVerse}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [verses, highlightedVerse]);
 
   useEffect(() => {
     if (!selectedTopic) { setTopicCards([]); return; }
@@ -571,6 +621,7 @@ export function BibleReader() {
                       <button
                         key={`${card.book}-${card.chapter}-${card.verse}`}
                         onClick={() => {
+                          setHighlightedVerse(card.verse);
                           go(card.book, card.chapter);
                           setActiveTab("books");
                           setTestamentFilter(
@@ -650,7 +701,13 @@ export function BibleReader() {
               </p>
               <div className="space-y-3">
                 {verses.map((v) => (
-                  <p key={v.verse} className="text-[15px] leading-[1.85] text-[var(--ink)]">
+                  <p
+                    key={v.verse}
+                    id={`verse-${v.verse}`}
+                    className={`scroll-mt-6 text-[15px] leading-[1.85] text-[var(--ink)] transition-colors duration-500 ${
+                      highlightedVerse === v.verse ? "-mx-2 rounded-lg bg-amber-100 px-2 ring-1 ring-amber-300" : ""
+                    }`}
+                  >
                     <span className="mr-1.5 select-none text-xs font-bold text-red-500">
                       {v.verse}
                     </span>
