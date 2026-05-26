@@ -271,3 +271,19 @@ model ActivityLog {
   @@index([entityType, entityId])
   @@index([createdAt])
 }
+
+model Slide {
+  id        String   @id @default(cuid())
+  title     String?
+  caption   String?
+  mediaUrl  String
+  mediaType String   @default("image")
+  linkUrl   String?
+  linkLabel String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}

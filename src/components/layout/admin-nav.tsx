@@ -21,6 +21,7 @@ const adminNavigation = [
   { href: "/admin/events", label: "Events", icon: CalendarDays },
   { href: "/admin/programs", label: "Programs", icon: BookOpen },
   { href: "/admin/galleries", label: "Galleries", icon: Images },
+  { href: "/admin/slides", label: "Slides", icon: Newspaper },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
