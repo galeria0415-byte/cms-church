@@ -31,6 +31,7 @@ export const publicNavigation = [
   { href: "/events", label: "Events" },
   { href: "/gallery", label: "Gallery" },
   { href: "/updates", label: "Updates" },
+  { href: "/bible", label: "Bible" },
   { href: "/contact", label: "Contact" },
 ];
 

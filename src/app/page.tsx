@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { getDailyVerseGNT } from "@/lib/bible";
 import { getSafeHomepageData } from "@/lib/public-content";
 import { ministryHighlights } from "@/lib/site";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -11,30 +12,11 @@ import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-type BibleVerse = { bookname: string; chapter: string; verse: string; text: string; title: string };
-
-async function getDailyVerse(): Promise<BibleVerse | null> {
-  try {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch("https://labs.bible.org/api/?passage=votd&type=json", {
-      next: { revalidate: 86400 },
-      signal: controller.signal,
-    });
-    clearTimeout(id);
-    if (!res.ok) return null;
-    const data = await res.json() as BibleVerse[];
-    return data[0] ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export default async function Home() {
   const [data, settings, verse] = await Promise.all([
     getSafeHomepageData(),
     getSiteSettings(),
-    getDailyVerse(),
+    getDailyVerseGNT(),
   ]);
 
   const now = new Date();
@@ -125,25 +107,31 @@ export default async function Home() {
 
         {(verse !== undefined) && (
           <section className="mx-auto w-full max-w-7xl px-6 pb-16 lg:px-10">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-3">
               {verse && (
-                <Card className="flex flex-col gap-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Verse of the Day</p>
+                <Card className="flex flex-col gap-4 lg:col-span-2">
+                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Verse of the Day &middot; Good News Translation</p>
                   <blockquote className="font-serif text-xl italic leading-8 text-[var(--ink)]">&ldquo;{verse.text}&rdquo;</blockquote>
-                  <p className="text-sm font-semibold text-[var(--accent)]">{verse.bookname} {verse.chapter}:{verse.verse}</p>
+                  <p className="text-sm font-semibold text-[var(--accent)]">{verse.ref}</p>
                 </Card>
               )}
               <Card className="flex flex-col gap-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Daily Devotion</p>
-                <p className="font-serif text-xl text-[var(--ink)]">Our Daily Bread</p>
-                <p className="text-sm leading-7 text-[var(--muted)]">Start your day with a short, scripture-based reflection from Our Daily Bread.</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">The Word</p>
+                <p className="font-serif text-xl text-[var(--ink)]">Good News Translation</p>
+                <p className="text-sm leading-7 text-[var(--muted)]">Browse the full Bible &mdash; Old and New Testament &mdash; in the Good News Translation.</p>
+                <Link
+                  href="/bible"
+                  className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
+                >
+                  Open Bible reader &rarr;
+                </Link>
                 <a
                   href={odbUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
                 >
-                  Read today&apos;s devotion →
+                  Our Daily Bread &rarr;
                 </a>
               </Card>
             </div>

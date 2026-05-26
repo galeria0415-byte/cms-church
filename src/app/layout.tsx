@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
 
+import { getSiteSettings } from "@/lib/site-settings";
+
 const bodyFont = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
@@ -12,10 +14,16 @@ const headingFont = Fraunces({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Grace Harbor Church CMS",
-  description: "Production-ready church website, CMS, and membership database built with Next.js, Prisma, and MySQL.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return {
+    title: {
+      default: settings.name,
+      template: `%s | ${settings.name}`,
+    },
+    description: settings.description,
+  };
+}
 
 export default function RootLayout({
   children,
