@@ -9,6 +9,8 @@ import {
   LayoutDashboard,
   Newspaper,
   Settings,
+  SlidersHorizontal,
+  UserCog,
   Users,
 } from "lucide-react";
 
@@ -21,7 +23,8 @@ const adminNavigation = [
   { href: "/admin/events", label: "Events", icon: CalendarDays },
   { href: "/admin/programs", label: "Programs", icon: BookOpen },
   { href: "/admin/galleries", label: "Galleries", icon: Images },
-  { href: "/admin/slides", label: "Slides", icon: Newspaper },
+  { href: "/admin/slides", label: "Slides", icon: SlidersHorizontal },
+  { href: "/admin/users", label: "Users", icon: UserCog },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
