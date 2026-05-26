@@ -1,8 +1,16 @@
 import { HeroSlider } from "@/components/hero-slider";
+import { prisma } from "@/lib/prisma";
 
 export default async function HomeHeroSlider() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/slides`, { cache: "no-store" });
-  const { slides } = await res.json();
-  if (!slides || slides.length === 0) return null;
+  let slides: Awaited<ReturnType<typeof prisma.slide.findMany>> = [];
+  try {
+    slides = await prisma.slide.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+    });
+  } catch {
+    return null;
+  }
+  if (slides.length === 0) return null;
   return <HeroSlider slides={slides} />;
 }
