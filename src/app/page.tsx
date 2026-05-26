@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { getDailyVerseGNT } from "@/lib/bible";
+import { VerseOfTheDayCard } from "@/components/verse-of-the-day";
 import { getSafeHomepageData } from "@/lib/public-content";
 import { ministryHighlights } from "@/lib/site";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -13,10 +13,9 @@ import { formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [data, settings, verse] = await Promise.all([
+  const [data, settings] = await Promise.all([
     getSafeHomepageData(),
     getSiteSettings(),
-    getDailyVerseGNT(),
   ]);
 
   const now = new Date();
@@ -105,38 +104,24 @@ export default async function Home() {
           </Card>
         </section>
 
-        {(verse !== undefined) && (
-          <section className="mx-auto w-full max-w-7xl px-6 pb-16 lg:px-10">
-            <div className="grid gap-6 lg:grid-cols-3">
-              {verse && (
-                <Card className="flex flex-col gap-4 lg:col-span-2">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Verse of the Day &middot; Good News Translation</p>
-                  <blockquote className="font-serif text-xl italic leading-8 text-[var(--ink)]">&ldquo;{verse.text}&rdquo;</blockquote>
-                  <p className="text-sm font-semibold text-[var(--accent)]">{verse.ref}</p>
-                </Card>
-              )}
+        <section className="mx-auto w-full max-w-7xl px-6 pb-16 lg:px-10">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <VerseOfTheDayCard />
               <Card className="flex flex-col gap-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">The Word</p>
-                <p className="font-serif text-xl text-[var(--ink)]">Good News Translation</p>
-                <p className="text-sm leading-7 text-[var(--muted)]">Browse the full Bible &mdash; Old and New Testament &mdash; in the Good News Translation.</p>
-                <Link
-                  href="/bible"
-                  className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
-                >
-                  Open Bible reader &rarr;
-                </Link>
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Daily Devotion</p>
+                <p className="font-serif text-xl text-[var(--ink)]">Our Daily Bread</p>
+                <p className="text-sm leading-7 text-[var(--muted)]">Start your day with a short, scripture-based reflection from Our Daily Bread.</p>
                 <a
                   href={odbUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
+                  className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]"
                 >
-                  Our Daily Bread &rarr;
+                  Read today&apos;s devotion &rarr;
                 </a>
               </Card>
             </div>
           </section>
-        )}
 
         <section className="mx-auto w-full max-w-7xl px-6 pb-16 lg:px-10">
           <Card>

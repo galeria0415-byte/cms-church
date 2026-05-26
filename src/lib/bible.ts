@@ -87,23 +87,27 @@ export async function fetchBibleChapter(
   bookNumber: number,
   chapterNumber: number,
 ): Promise<BibleChapterData | null> {
-  try {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(
-      `https://api.getbible.net/v2/gnt/${bookNumber}/${chapterNumber}.json`,
-      { next: { revalidate: 86400 * 30 }, signal: controller.signal },
-    );
-    clearTimeout(id);
-    if (!res.ok) return null;
-    return (await res.json()) as BibleChapterData;
-  } catch {
-    return null;
+  for (const translation of ["gnb", "web", "kjv"]) {
+    try {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(
+        `https://api.getbible.net/v2/${translation}/${bookNumber}/${chapterNumber}.json`,
+        { signal: controller.signal },
+      );
+      clearTimeout(id);
+      if (res.ok) {
+        return (await res.json()) as BibleChapterData;
+      }
+    } catch {
+      // try next translation
+    }
   }
+  return null;
 }
 
-// 31 popular verses cycling by day-of-month for the homepage VOTD (GNT)
-const DAILY_VERSE_REFS: Array<{ book: number; chapter: number; verse: number; ref: string }> = [
+// 31 popular verses cycling by day-of-month (used client-side for VOTD)
+export const DAILY_VERSE_REFS: Array<{ book: number; chapter: number; verse: number; ref: string }> = [
   { book: 43, chapter: 3, verse: 16, ref: "John 3:16" },
   { book: 19, chapter: 23, verse: 1, ref: "Psalm 23:1" },
   { book: 50, chapter: 4, verse: 13, ref: "Philippians 4:13" },
@@ -137,14 +141,9 @@ const DAILY_VERSE_REFS: Array<{ book: number; chapter: number; verse: number; re
   { book: 51, chapter: 3, verse: 17, ref: "Colossians 3:17" },
 ];
 
-export type DailyVerse = { text: string; ref: string };
+export const TRANSLATION_LABELS: Record<string, string> = {
+  gnb: "Good News Bible",
+  web: "World English Bible",
+  kjv: "King James Version",
+};
 
-export async function getDailyVerseGNT(): Promise<DailyVerse | null> {
-  const dayIndex = (new Date().getDate() - 1) % DAILY_VERSE_REFS.length;
-  const { book, chapter, verse, ref } = DAILY_VERSE_REFS[dayIndex];
-  const data = await fetchBibleChapter(book, chapter);
-  if (!data) return null;
-  const verseData = data.verses[String(verse)];
-  if (!verseData) return null;
-  return { text: verseData.text.trim(), ref };
-}
