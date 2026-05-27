@@ -8,6 +8,7 @@ const standaloneDir = path.join(rootDir, ".next", "standalone");
 const standaloneStaticDir = path.join(rootDir, ".next", "static");
 const publicDir = path.join(rootDir, "public");
 const dataDir = path.join(rootDir, "data");
+const scriptsDir = path.join(rootDir, "scripts");
 const manifestName = ".cpanel-deploy-manifest.json";
 
 async function exists(targetPath) {
@@ -81,6 +82,10 @@ async function main() {
     await copyDir(dataDir, path.join(artifactDir, "data"));
   } else {
     await fs.mkdir(path.join(artifactDir, "data"), { recursive: true });
+  }
+
+  if (await exists(scriptsDir)) {
+    await copyDir(scriptsDir, path.join(artifactDir, "scripts"));
   }
 
   await fs.mkdir(path.join(artifactDir, "public", "uploads"), { recursive: true });
