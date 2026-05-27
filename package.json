@@ -17,6 +17,7 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push --schema=./prisma/schema.prisma",
     "install:cpanel": "node scripts/cpanel-install.mjs",
+    "reset:admin": "node scripts/reset-admin-password.mjs",
     "deploy:cpanel": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1",
     "deploy:cpanel:no-git": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1 -NoGit",
     "deploy:cpanel:dry-run": "powershell -ExecutionPolicy Bypass -File .\\build-deploy.ps1 -DryRun -NoGit"

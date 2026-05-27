@@ -34,8 +34,8 @@ export function LoginForm() {
       callbackUrl: "/admin",
     });
 
-    if (response?.error) {
-      setError("Incorrect email or password.");
+    if (!response?.ok || response?.error) {
+      setError("Incorrect email or password. Please try again.");
       return;
     }
 
