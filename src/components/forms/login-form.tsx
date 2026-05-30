@@ -19,10 +19,6 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "admin@graceharbor.org",
-      password: "ChangeMe123!",
-    },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -63,7 +59,6 @@ export function LoginForm() {
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Signing in..." : "Sign in"}
       </Button>
-      <p className="text-sm text-[var(--muted)]">Seeded admin login: admin@graceharbor.org / ChangeMe123!</p>
     </form>
   );
 }

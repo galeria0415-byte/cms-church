@@ -1,5 +1,4 @@
 import { PrismaClient, UserRole, ContentStatus, MembershipStatus, MembershipType, ServiceAttendanceStatus } from "@prisma/client";
-import bcrypt from "bcryptjs";
 import { addDays, set, subDays } from "date-fns";
 
 const prisma = new PrismaClient();
@@ -13,22 +12,9 @@ function toSlug(value: string) {
 }
 
 async function main() {
-  const passwordHash = await bcrypt.hash("ChangeMe123!", 12);
-
-  const users = await Promise.all(
-    [
-      { name: "Admin User", email: "admin@graceharbor.org", role: UserRole.ADMIN },
-      { name: "Editor User", email: "editor@graceharbor.org", role: UserRole.EDITOR },
-      { name: "Staff User", email: "staff@graceharbor.org", role: UserRole.STAFF },
-      { name: "Viewer User", email: "viewer@graceharbor.org", role: UserRole.VIEWER },
-    ].map((user) =>
-      prisma.user.upsert({
-        where: { email: user.email },
-        update: { ...user, passwordHash },
-        create: { ...user, passwordHash },
-      }),
-    ),
-  );
+  // Seed only creates sample members, posts, events, programs, and gallery data.
+  // Use Admin > Users to create real user accounts.
+  const users: { id: string }[] = [];
 
   const today = new Date();
   const birthday = set(today, { year: 1991, month: today.getMonth(), date: today.getDate() });
@@ -156,7 +142,11 @@ async function main() {
     });
   }
 
-  const admin = users[0];
+  const admin = await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
+  if (!admin) {
+    console.log("No admin user found. Create an admin via Admin > Users, then re-run the seed to add sample content.");
+    return;
+  }
 
   const posts = [
     {
