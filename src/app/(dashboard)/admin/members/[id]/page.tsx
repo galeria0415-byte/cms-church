@@ -20,9 +20,9 @@ function Field({
   span?: boolean;
 }) {
   return (
-    <div className={span ? "col-span-2" : ""}>
-      <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{label}</dt>
-      <dd className="mt-1.5 text-sm text-[var(--ink)]">{value || "â€”"}</dd>
+    <div className={span ? "sm:col-span-2" : ""}>
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">{label}</dt>
+      <dd className="mt-1.5 text-sm leading-6 text-[var(--ink)]">{value || "-"}</dd>
     </div>
   );
 }
@@ -39,27 +39,58 @@ function FieldLink({
   span?: boolean;
 }) {
   return (
-    <div className={span ? "col-span-2" : ""}>
-      <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{label}</dt>
+    <div className={span ? "sm:col-span-2" : ""}>
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">{label}</dt>
       {href ? (
         <dd className="mt-1.5">
           <Link href={href} className="text-sm font-medium text-[var(--accent)] hover:underline">
-            {value || "â€”"}
+            {value || "-"}
           </Link>
         </dd>
       ) : (
-        <dd className="mt-1.5 text-sm text-[var(--ink)]">{value || "â€”"}</dd>
+        <dd className="mt-1.5 text-sm leading-6 text-[var(--ink)]">{value || "-"}</dd>
       )}
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="rounded-[20px] border border-[var(--line)] bg-white p-6">
-      <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">{title}</h2>
-      <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-5">{children}</dl>
+    <section className="rounded-[28px] border border-[var(--line)] bg-white p-6 shadow-sm">
+      <div className="border-b border-[var(--line)] pb-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">{title}</p>
+        {description ? <p className="mt-2 text-sm text-[var(--muted)]">{description}</p> : null}
+      </div>
+      <dl className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">{children}</dl>
+    </section>
+  );
+}
+
+function Stat({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="rounded-2xl bg-[var(--surface-subtle)] px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">{label}</p>
+      <p className="mt-2 text-sm font-medium text-[var(--ink)]">{value || "-"}</p>
     </div>
+  );
+}
+
+function ActionLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex h-10 items-center justify-center rounded-lg bg-[var(--accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--accent-strong)]"
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -95,7 +126,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
     member.civilStatus,
     member.nationality,
     member.dateJoinedChurch ? `Joined ${formatDate(member.dateJoinedChurch)}` : null,
-  ].filter(Boolean).join(" Â· ");
+  ].filter(Boolean).join(" / ");
 
   const ministryText = (() => {
     try {
@@ -107,42 +138,44 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
   })();
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="rounded-[28px] border border-[var(--line)] bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div className="flex items-center gap-5">
+    <div className="space-y-6">
+      <section className="rounded-[32px] border border-[var(--line)] bg-white p-6 shadow-sm lg:p-8">
+        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_220px]">
+          <div className="mx-auto w-full max-w-[220px]">
             {member.profilePhotoUrl ? (
               <img
                 src={member.profilePhotoUrl}
                 alt={fullName(member)}
-                className="h-[88px] w-[88px] rounded-2xl border border-[var(--line)] object-cover shadow-sm"
+                className="aspect-[4/5] w-full rounded-[28px] border border-[var(--line)] object-cover"
               />
             ) : (
-              <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-subtle)] text-2xl font-bold text-[var(--accent)]">
+              <div className="flex aspect-[4/5] w-full items-center justify-center rounded-[28px] border border-[var(--line)] bg-[var(--surface-subtle)] text-4xl font-semibold text-[var(--accent)]">
                 {fullName(member).slice(0, 2).toUpperCase()}
               </div>
             )}
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Member record</p>
-              <h1 className="mt-1.5 text-2xl font-bold text-[var(--ink)]">{fullName(member)}</h1>
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                <Badge>{member.memberId}</Badge>
-                <Badge>{member.membershipStatus}</Badge>
-                <Badge>{member.recordStatus}</Badge>
-              </div>
-              {summaryLine && (
-                <p className="mt-2 text-sm text-[var(--muted)]">{summaryLine}</p>
-              )}
+          </div>
+
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Member record</p>
+            <h1 className="mt-3 text-3xl font-semibold leading-tight text-[var(--ink)]">{fullName(member)}</h1>
+            {summaryLine ? <p className="mt-3 text-sm text-[var(--muted)]">{summaryLine}</p> : null}
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Badge>{member.memberId}</Badge>
+              <Badge>{member.membershipStatus}</Badge>
+              <Badge>{member.recordStatus}</Badge>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <Stat label="Church organization" value={member.churchOrganization} />
+              <Stat label="Membership type" value={member.membershipType} />
+              <Stat label="Attendance" value={member.serviceAttendanceStatus} />
+              <Stat label="Shepherding group" value={member.shepherdingGroup} />
             </div>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Link
-              href={`/admin/members/${member.id}/edit`}
-              className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--sand)]"
-            >
-              Edit member
-            </Link>
+
+          <div className="flex flex-col gap-3 lg:items-stretch">
+            <ActionLink href={`/admin/members/${member.id}/edit`}>Edit member</ActionLink>
             <ArchiveButton id={member.id} />
             <DeleteButton
               apiPath={`/api/members/${member.id}?hard=true`}
@@ -152,11 +185,10 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
             />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Sections */}
       <div className="grid gap-5 lg:grid-cols-2">
-        <Section title="Personal information">
+        <Section title="Personal information" description="Identity, contact details, and emergency information.">
           <Field label="Birth date" value={formatDate(member.birthDate)} />
           <Field label="Gender" value={member.gender} />
           <Field label="Civil status" value={member.civilStatus} />
@@ -171,7 +203,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           />
         </Section>
 
-        <Section title="Church affiliation">
+        <Section title="Church affiliation" description="Membership standing, sacramental dates, and church placement.">
           <Field label="Joined church" value={formatDate(member.dateJoinedChurch)} />
           <Field label="Membership type" value={member.membershipType} />
           <Field label="Membership category" value={member.membershipCategory} />
@@ -183,7 +215,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           <Field label="Previous church" value={member.previousChurch} span />
         </Section>
 
-        <Section title="Family and relationships">
+        <Section title="Family and relationships" description="Immediate family references and linked member profiles.">
           <FieldLink
             label="Spouse"
             value={member.spouseName}
@@ -201,17 +233,23 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
             href={member.motherMemberId ? memberLinkMap.get(member.motherMemberId) : undefined}
           />
           {childrenLinks.length > 0 ? (
-            <div className="col-span-2">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Children</dt>
-              <dd className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+            <div className="sm:col-span-2">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Children</dt>
+              <dd className="mt-2 flex flex-wrap gap-2">
                 {childrenLinks.map((c, i) => {
                   const href = c.memberId ? memberLinkMap.get(c.memberId) : undefined;
                   return href ? (
-                    <Link key={i} href={href} className="text-sm font-medium text-[var(--accent)] hover:underline">
+                    <Link
+                      key={i}
+                      href={href}
+                      className="rounded-full bg-[var(--surface-subtle)] px-3 py-1.5 text-sm font-medium text-[var(--accent)] transition hover:bg-[var(--sand)]"
+                    >
                       {c.name || "(unnamed)"}
                     </Link>
                   ) : (
-                    <span key={i} className="text-sm text-[var(--ink)]">{c.name || "(unnamed)"}</span>
+                    <span key={i} className="rounded-full bg-[var(--surface-subtle)] px-3 py-1.5 text-sm text-[var(--ink)]">
+                      {c.name || "(unnamed)"}
+                    </span>
                   );
                 })}
               </dd>
@@ -222,7 +260,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           <Field label="Guardian" value={member.guardian} />
         </Section>
 
-        <Section title="Ministry and work">
+        <Section title="Ministry and work" description="Service history, training, and employment background.">
           <Field label="Ministry roles" value={ministryText} span />
           <Field label="Training completed" value={parseCsv(member.trainingCompleted).join(", ")} span />
           <Field label="Occupation" value={member.occupation} />

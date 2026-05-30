@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 
-import { MemberForm, mapMemberToForm } from "@/components/forms/member-form";
 import { requireRole } from "@/lib/auth";
 import { MEMBER_MANAGER_ROLES } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+
+import { EditMemberClient } from "./edit-member-client";
 
 type Params = Promise<{ id: string }>;
 
@@ -22,7 +23,7 @@ export default async function EditMemberPage({ params }: { params: Params }) {
         <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Membership database</p>
         <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Edit member</h1>
       </div>
-      <MemberForm member={mapMemberToForm(member)} />
+      <EditMemberClient id={member.id} />
     </div>
   );
 }

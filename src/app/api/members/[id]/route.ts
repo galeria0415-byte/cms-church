@@ -9,6 +9,23 @@ type Params = {
   params: Promise<{ id: string }>;
 };
 
+export async function GET(_request: Request, { params }: Params) {
+  await requireRole(MEMBER_MANAGER_ROLES);
+  const { id } = await params;
+
+  try {
+    const member = await prisma.member.findUnique({ where: { id } });
+
+    if (!member) {
+      return NextResponse.json({ error: "Member not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ member });
+  } catch {
+    return NextResponse.json({ error: "Unable to load this member." }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request, { params }: Params) {
   const session = await requireRole(MEMBER_MANAGER_ROLES);
   const { id } = await params;
