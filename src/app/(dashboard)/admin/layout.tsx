@@ -36,7 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/55">Role: {titleize(session.user.role)}</p>
             </div>
           </Link>
-          <nav className="mt-8 space-y-2">
+          <nav className="mt-8 min-h-0 flex-1 space-y-2 overflow-y-auto">
             {adminNavigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -47,7 +47,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               );
             })}
           </nav>
-          <div className="mt-auto pt-6">
+          <div className="shrink-0 pt-6">
             <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
               <p className="text-sm font-semibold">Signed in as</p>
               <p className="mt-1 text-sm text-white/70">{session.user.name ?? session.user.email}</p>

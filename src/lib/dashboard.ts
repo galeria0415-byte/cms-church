@@ -114,10 +114,10 @@ export async function getHomepageData() {
   };
 }
 
-export async function getActivityFeed() {
+export async function getActivityFeed(limit = 8) {
   return prisma.activityLog.findMany({
     orderBy: { createdAt: "desc" },
-    take: 8,
+    take: limit,
     include: { user: { select: { name: true, email: true } } },
   });
 }

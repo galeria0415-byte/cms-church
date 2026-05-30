@@ -3,14 +3,10 @@ import Link from "next/link";
 import { ObservancePanel } from "@/components/dashboard/observance-panel";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card } from "@/components/ui/card";
-import { getActivityFeed, getDashboardSummary } from "@/lib/dashboard";
-import { formatDate } from "@/lib/utils";
+import { getDashboardSummary } from "@/lib/dashboard";
 
 export default async function AdminDashboardPage() {
-  const [summary, activityFeed] = await Promise.all([
-    getDashboardSummary().catch(() => null),
-    getActivityFeed().catch(() => [] as Awaited<ReturnType<typeof getActivityFeed>>),
-  ]);
+  const summary = await getDashboardSummary().catch(() => null);
 
   if (!summary) {
     return (
@@ -58,31 +54,6 @@ export default async function AdminDashboardPage() {
         </Card>
       </section>
 
-      <section>
-        <Card>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Activity summary</p>
-              <h2 className="mt-2 text-base font-semibold text-[var(--ink)]">Recent admin activity</h2>
-            </div>
-          </div>
-          <div className="mt-6 space-y-3">
-            {activityFeed.length === 0 ? (
-              <p className="text-sm text-[var(--muted)]">No activity has been recorded yet.</p>
-            ) : (
-              activityFeed.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--line)] px-4 py-4">
-                  <div>
-                    <p className="font-medium text-[var(--ink)]">{entry.summary}</p>
-                    <p className="text-sm text-[var(--muted)]">{entry.user?.name ?? entry.user?.email ?? "System"}</p>
-                  </div>
-                  <p className="text-sm text-[var(--muted)]">{formatDate(entry.createdAt, "MMM d, h:mm a")}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
-      </section>
     </div>
   );
 }

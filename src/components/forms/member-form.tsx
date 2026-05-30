@@ -1066,6 +1066,7 @@ export function mapMemberToForm(member: Record<string, unknown> & { id: string }
     emergencyContactName: String(member.emergencyContactName ?? ""),
     emergencyContactNumber: String(member.emergencyContactNumber ?? ""),
     spouseName: String(member.spouseName ?? ""),
+    spouseMemberId: String(member.spouseMemberId ?? ""),
     weddingDate: formatDateInput(member.weddingDate as string | Date | null),
     fatherName: String(member.fatherName ?? ""),
     fatherMemberId: String(member.fatherMemberId ?? ""),
