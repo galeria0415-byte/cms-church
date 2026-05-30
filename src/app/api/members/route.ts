@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireRole } from "@/lib/auth";
-import { findMemberByMemberId, hydrateLinkedMemberFields } from "@/lib/member-links";
+import { findMemberByMemberId, hydrateLinkedMemberFields, synchronizeReciprocalFamilyLinks } from "@/lib/member-links";
 import { MEMBER_MANAGER_ROLES } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { memberSchema } from "@/lib/validators/member";
@@ -43,6 +43,8 @@ export async function POST(request: Request) {
     const member = await prisma.member.create({
       data: hydratedData,
     });
+
+    await synchronizeReciprocalFamilyLinks(member.id);
 
     await prisma.activityLog.create({
       data: {

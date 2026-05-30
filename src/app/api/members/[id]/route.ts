@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireRole } from "@/lib/auth";
-import { hydrateLinkedMemberFields } from "@/lib/member-links";
+import { hydrateLinkedMemberFields, synchronizeReciprocalFamilyLinks } from "@/lib/member-links";
 import { canDeleteMember, MEMBER_MANAGER_ROLES } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { memberSchema } from "@/lib/validators/member";
@@ -43,6 +43,8 @@ export async function PUT(request: Request, { params }: Params) {
       where: { id },
       data: hydratedData,
     });
+
+    await synchronizeReciprocalFamilyLinks(member.id);
 
     await prisma.activityLog.create({
       data: {

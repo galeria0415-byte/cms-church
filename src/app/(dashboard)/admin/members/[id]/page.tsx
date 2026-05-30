@@ -130,6 +130,7 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
 
           <div className="flex flex-col gap-3">
             <ActionLink href={`/admin/members/${member.id}/edit`}>Edit member</ActionLink>
+            <ActionLink href={`/admin/members/${member.id}/relatives`}>View relatives</ActionLink>
             <ActionLink href={`/print/members/${member.id}`}>
               Print profile
             </ActionLink>

@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { Gender, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { fullName } from "@/lib/utils";
@@ -19,6 +20,40 @@ type LinkedMember = {
 
 function formatJsonDate(value: Date | null) {
   return value ? format(value, "yyyy-MM-dd") : undefined;
+}
+
+function parseChildrenLinks(value?: string | null) {
+  try {
+    return JSON.parse(value ?? "[]") as Array<{ name?: string; memberId?: string; birthDate?: string }>;
+  } catch {
+    return [];
+  }
+}
+
+function stringifyChildrenLinks(value: Array<{ name?: string; memberId?: string; birthDate?: string }>) {
+  return JSON.stringify(value);
+}
+
+function upsertChildLink(
+  children: Array<{ name?: string; memberId?: string; birthDate?: string }>,
+  nextChild: { name?: string; memberId: string; birthDate?: string },
+) {
+  const existingIndex = children.findIndex((child) => child.memberId === nextChild.memberId);
+
+  if (existingIndex === -1) {
+    return [...children, nextChild];
+  }
+
+  const updated = [...children];
+  updated[existingIndex] = {
+    ...updated[existingIndex],
+    ...nextChild,
+  };
+  return updated;
+}
+
+function removeChildLink(children: Array<{ name?: string; memberId?: string; birthDate?: string }>, memberId: string) {
+  return children.filter((child) => child.memberId !== memberId);
 }
 
 export async function findMemberByMemberId(memberId: string) {
@@ -109,4 +144,168 @@ export async function hydrateLinkedMemberFields(input: MemberInput) {
     motherDeceasedDate: mother?.deceasedDate ?? input.motherDeceasedDate,
     childrenLinks: JSON.stringify(childrenLinks),
   } satisfies MemberInput;
+}
+
+export async function synchronizeReciprocalFamilyLinks(memberId: string) {
+  await prisma.$transaction(async (tx) => {
+    const member = await tx.member.findUnique({
+      where: { id: memberId },
+      select: {
+        id: true,
+        memberId: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        suffix: true,
+        gender: true,
+        birthDate: true,
+        deceasedDate: true,
+        spouseMemberId: true,
+        fatherMemberId: true,
+        motherMemberId: true,
+        childrenLinks: true,
+      },
+    });
+
+    if (!member) {
+      return;
+    }
+
+    const currentName = fullName(member);
+    const currentBirthDate = formatJsonDate(member.birthDate);
+    const desiredChildLinks = parseChildrenLinks(member.childrenLinks).filter((child): child is { name?: string; memberId: string; birthDate?: string } => Boolean(child.memberId));
+    const desiredChildMemberIds = desiredChildLinks.map((child) => child.memberId);
+
+    const currentSpouse = member.spouseMemberId
+      ? await tx.member.findUnique({
+          where: { memberId: member.spouseMemberId },
+          select: { id: true, memberId: true, spouseMemberId: true, firstName: true, middleName: true, lastName: true, suffix: true },
+        })
+      : null;
+
+    const membersPointingToCurrentAsSpouse = await tx.member.findMany({
+      where: { spouseMemberId: member.memberId, NOT: { id: member.id } },
+      select: { id: true, memberId: true },
+    });
+
+    for (const linkedSpouse of membersPointingToCurrentAsSpouse) {
+      if (!currentSpouse || linkedSpouse.memberId !== currentSpouse.memberId) {
+        await tx.member.update({
+          where: { id: linkedSpouse.id },
+          data: { spouseMemberId: null, spouseName: null },
+        });
+      }
+    }
+
+    if (currentSpouse) {
+      await tx.member.updateMany({
+        where: { spouseMemberId: currentSpouse.memberId, NOT: { id: member.id } },
+        data: { spouseMemberId: null, spouseName: null },
+      });
+
+      await tx.member.update({
+        where: { id: currentSpouse.id },
+        data: { spouseMemberId: member.memberId, spouseName: currentName },
+      });
+    }
+
+    const parentsContainingCurrent = await tx.member.findMany({
+      where: { childrenLinks: { contains: member.memberId } },
+      select: { id: true, memberId: true, childrenLinks: true },
+    });
+
+    for (const parent of parentsContainingCurrent) {
+      if (parent.memberId !== member.fatherMemberId && parent.memberId !== member.motherMemberId) {
+        await tx.member.update({
+          where: { id: parent.id },
+          data: { childrenLinks: stringifyChildrenLinks(removeChildLink(parseChildrenLinks(parent.childrenLinks), member.memberId)) },
+        });
+      }
+    }
+
+    const desiredParents = [
+      { memberId: member.fatherMemberId, nameField: "fatherName" as const },
+      { memberId: member.motherMemberId, nameField: "motherName" as const },
+    ].filter((parent): parent is { memberId: string; nameField: "fatherName" | "motherName" } => Boolean(parent.memberId));
+
+    for (const parent of desiredParents) {
+      const linkedParent = await tx.member.findUnique({
+        where: { memberId: parent.memberId },
+        select: { id: true, childrenLinks: true },
+      });
+
+      if (!linkedParent) {
+        continue;
+      }
+
+      const updatedChildren = upsertChildLink(parseChildrenLinks(linkedParent.childrenLinks), {
+        memberId: member.memberId,
+        name: currentName,
+        birthDate: currentBirthDate,
+      });
+
+      await tx.member.update({
+        where: { id: linkedParent.id },
+        data: { childrenLinks: stringifyChildrenLinks(updatedChildren) },
+      });
+    }
+
+    if (member.gender === Gender.MALE || member.gender === Gender.FEMALE) {
+      const parentIdField = member.gender === Gender.MALE ? "fatherMemberId" : "motherMemberId";
+      const parentNameField = member.gender === Gender.MALE ? "fatherName" : "motherName";
+
+      const currentChildren = await tx.member.findMany({
+        where: { [parentIdField]: member.memberId } as Prisma.MemberWhereInput,
+        select: { id: true, memberId: true, fatherMemberId: true, motherMemberId: true },
+      });
+
+      for (const child of currentChildren) {
+        if (!desiredChildMemberIds.includes(child.memberId)) {
+          await tx.member.update({
+            where: { id: child.id },
+            data: member.gender === Gender.MALE
+              ? { fatherMemberId: null, fatherName: null }
+              : { motherMemberId: null, motherName: null },
+          });
+        }
+      }
+
+      const desiredChildren = desiredChildMemberIds.length
+        ? await tx.member.findMany({
+            where: { memberId: { in: desiredChildMemberIds } },
+            select: {
+              id: true,
+              memberId: true,
+              fatherMemberId: true,
+              motherMemberId: true,
+            },
+          })
+        : [];
+
+      for (const child of desiredChildren) {
+        const previousParentMemberId = member.gender === Gender.MALE ? child.fatherMemberId : child.motherMemberId;
+
+        if (previousParentMemberId && previousParentMemberId !== member.memberId) {
+          const previousParent = await tx.member.findUnique({
+            where: { memberId: previousParentMemberId },
+            select: { id: true, childrenLinks: true },
+          });
+
+          if (previousParent) {
+            await tx.member.update({
+              where: { id: previousParent.id },
+              data: { childrenLinks: stringifyChildrenLinks(removeChildLink(parseChildrenLinks(previousParent.childrenLinks), child.memberId)) },
+            });
+          }
+        }
+
+        await tx.member.update({
+          where: { id: child.id },
+          data: member.gender === Gender.MALE
+            ? { fatherMemberId: member.memberId, fatherName: currentName }
+            : { motherMemberId: member.memberId, motherName: currentName },
+        });
+      }
+    }
+  });
 }
