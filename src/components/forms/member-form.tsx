@@ -257,6 +257,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
   });
 
   const profilePhotoUrl = useWatch({ control, name: "profilePhotoUrl" });
+  const watchedMembershipStatus = useWatch({ control, name: "membershipStatus" });
   const watchedSpouseMemberId = useWatch({ control, name: "spouseMemberId" });
   const watchedFatherMemberId = useWatch({ control, name: "fatherMemberId" });
   const watchedMotherMemberId = useWatch({ control, name: "motherMemberId" });
@@ -308,11 +309,14 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       motherBirthDate: values.motherBirthDate || undefined,
       baptizedDate: values.baptizedDate || undefined,
       confirmationDate: values.confirmationDate || undefined,
-      deceasedDate: values.deceasedDate || undefined,
       dateJoinedChurch: values.dateJoinedChurch || undefined,
       childrenLinks: JSON.stringify(childEntries),
       ministryRoles: JSON.stringify(ministryRoleEntries),
       trainingCompleted: values.trainingCompleted || "",
+      deceasedDate:
+        values.membershipStatus === MembershipStatus.DECEASED
+          ? values.deceasedDate || undefined
+          : undefined,
     };
 
     const response = await fetch(
@@ -714,9 +718,6 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 <Field label="Guardian">
                   <Input placeholder="If applicable" {...register("guardian")} />
                 </Field>
-                <Field label="Date of Death" hint="For the member themselves.">
-                  <Input type="date" {...register("deceasedDate")} />
-                </Field>
               </div>
             </div>
           )}
@@ -782,6 +783,11 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                     ))}
                   </Select>
                 </Field>
+                {watchedMembershipStatus === MembershipStatus.DECEASED && (
+                  <Field label="Date of Death" error={errors.deceasedDate?.message} hint="Required for deceased members.">
+                    <Input type="date" {...register("deceasedDate")} />
+                  </Field>
+                )}
                 <Field label="Membership Type">
                   <Select {...register("membershipType")}>
                     <option value="">Select type</option>
@@ -1006,6 +1012,9 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                   <SummaryRow label="Previous Church" value={values.previousChurch} />
                   <SummaryRow label="Shepherding Group" value={values.shepherdingGroup} />
                   <SummaryRow label="Attendance" value={values.serviceAttendanceStatus ? titleize(values.serviceAttendanceStatus) : undefined} />
+                  {values.membershipStatus === MembershipStatus.DECEASED && (
+                    <SummaryRow label="Date of Death" value={values.deceasedDate} />
+                  )}
                 </SummarySection>
                 <SummarySection title="Ministry">
                   <SummaryRow label="Roles" value={ministryRoleEntries.map((r) => `${r.ministry}: ${r.role}`).join("; ")} />

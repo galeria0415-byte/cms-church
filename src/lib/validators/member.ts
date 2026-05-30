@@ -113,6 +113,17 @@ export const memberSchema = z.object({
   remarks: optionalString,
   recordStatus: z.nativeEnum(RecordStatus).default(RecordStatus.ACTIVE),
   isArchived: z.boolean().optional().default(false),
-});
+}).superRefine((data, ctx) => {
+  if (data.membershipStatus === MembershipStatus.DECEASED && !data.deceasedDate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["deceasedDate"],
+      message: "Date of death is required when membership status is deceased.",
+    });
+  }
+}).transform((data) => ({
+  ...data,
+  deceasedDate: data.membershipStatus === MembershipStatus.DECEASED ? data.deceasedDate : undefined,
+}));
 
 export type MemberInput = z.infer<typeof memberSchema>;
