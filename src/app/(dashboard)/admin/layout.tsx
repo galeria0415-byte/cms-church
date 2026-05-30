@@ -28,7 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <div className="mx-auto grid min-h-screen max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[260px_1fr] lg:px-8">
-        <aside className="rounded-[32px] border border-[var(--line)] bg-[var(--surface-strong)] p-6 text-white shadow-[0_30px_80px_-55px_rgba(15,23,42,0.9)]">
+        <aside className="flex flex-col rounded-[32px] border border-[var(--line)] bg-[var(--surface-strong)] p-6 text-white shadow-[0_30px_80px_-55px_rgba(15,23,42,0.9)] lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <Link href="/admin" className="flex items-center gap-4">
             {settings.logoUrl ? <img src={settings.logoUrl} alt={settings.name} className="h-11 w-11 rounded-2xl bg-white object-contain p-2" /> : null}
             <div>
@@ -47,12 +47,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               );
             })}
           </nav>
-          <div className="mt-8 rounded-3xl border border-white/10 bg-white/8 p-4">
-            <p className="text-sm font-semibold">Signed in as</p>
-            <p className="mt-2 text-sm text-white/70">{session.user.name ?? session.user.email}</p>
-          </div>
-          <div className="mt-6">
-            <AdminSignOutButton />
+          <div className="mt-auto pt-6">
+            <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
+              <p className="text-sm font-semibold">Signed in as</p>
+              <p className="mt-1 text-sm text-white/70">{session.user.name ?? session.user.email}</p>
+            </div>
+            <div className="mt-3">
+              <AdminSignOutButton />
+            </div>
           </div>
         </aside>
         <main className="space-y-6 py-2">{children}</main>
