@@ -133,6 +133,7 @@ model Member {
   emergencyContactName     String?
   emergencyContactNumber   String?
   spouseName               String?
+  spouseMemberId           String?
   weddingDate              DateTime?
   fatherName               String?
   fatherMemberId           String?

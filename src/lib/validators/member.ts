@@ -75,6 +75,7 @@ export const memberSchema = z.object({
   emergencyContactName: optionalString,
   emergencyContactNumber: optionalString,
   spouseName: optionalString,
+  spouseMemberId: optionalString,
   weddingDate: optionalDate,
   fatherName: optionalString,
   fatherMemberId: optionalString,

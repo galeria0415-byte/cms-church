@@ -20,6 +20,21 @@ function DetailRow({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
+function DetailLinkRow({ label, value, href }: { label: string; value?: string | null; href?: string }) {
+  return (
+    <div className="rounded-2xl border border-[var(--line)] bg-white px-4 py-3">
+      <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{label}</p>
+      {href ? (
+        <Link href={href} className="mt-2 block text-sm font-medium text-[var(--accent)] hover:underline">
+          {value || "-"}
+        </Link>
+      ) : (
+        <p className="mt-2 text-sm text-[var(--ink)]">{value || "-"}</p>
+      )}
+    </div>
+  );
+}
+
 export default async function MemberDetailPage({ params }: { params: Params }) {
   const { id } = await params;
   const member = await prisma.member.findUnique({ where: { id } });
@@ -27,6 +42,26 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
   if (!member) {
     notFound();
   }
+
+  // Collect all linked memberIds for batch lookup
+  let childrenLinks: Array<{ name?: string; memberId?: string }> = [];
+  try { childrenLinks = JSON.parse(member.childrenLinks ?? "[]"); } catch { /* empty */ }
+
+  const linkedMemberIds = [
+    member.fatherMemberId,
+    member.motherMemberId,
+    member.spouseMemberId,
+    ...childrenLinks.map((c) => c.memberId),
+  ].filter((mid): mid is string => !!mid);
+
+  const linkedMembers = linkedMemberIds.length > 0
+    ? await prisma.member.findMany({
+        where: { memberId: { in: linkedMemberIds } },
+        select: { id: true, memberId: true, firstName: true, lastName: true },
+      })
+    : [];
+
+  const memberLinkMap = new Map(linkedMembers.map((m) => [m.memberId, `/admin/members/${m.id}`]));
 
   return (
     <div className="space-y-6">
@@ -80,11 +115,27 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
         <Card>
           <h2 className="text-base font-semibold text-[var(--ink)]">Family and work</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <DetailRow label="Spouse" value={member.spouseName} />
+            <DetailLinkRow label="Spouse" value={member.spouseName} href={member.spouseMemberId ? memberLinkMap.get(member.spouseMemberId) : undefined} />
             <DetailRow label="Wedding date" value={formatDate(member.weddingDate)} />
-            <DetailRow label="Father" value={member.fatherName} />
-            <DetailRow label="Mother" value={member.motherName} />
-            <DetailRow label="Children" value={(() => { try { return (JSON.parse(member.childrenLinks ?? "[]") as Array<{ name: string }>).map((c) => c.name).filter(Boolean).join(", "); } catch { return ""; } })()} />
+            <DetailLinkRow label="Father" value={member.fatherName} href={member.fatherMemberId ? memberLinkMap.get(member.fatherMemberId) : undefined} />
+            <DetailLinkRow label="Mother" value={member.motherName} href={member.motherMemberId ? memberLinkMap.get(member.motherMemberId) : undefined} />
+            <div className="rounded-2xl border border-[var(--line)] bg-white px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Children</p>
+              {childrenLinks.length === 0 ? (
+                <p className="mt-2 text-sm text-[var(--ink)]">-</p>
+              ) : (
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                  {childrenLinks.map((c, i) => {
+                    const href = c.memberId ? memberLinkMap.get(c.memberId) : undefined;
+                    return href ? (
+                      <Link key={i} href={href} className="text-sm font-medium text-[var(--accent)] hover:underline">{c.name || "(unnamed)"}</Link>
+                    ) : (
+                      <span key={i} className="text-sm text-[var(--ink)]">{c.name || "(unnamed)"}</span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <DetailRow label="Occupation" value={member.occupation} />
             <DetailRow label="Company" value={member.companyName} />
             <DetailRow label="Employment status" value={member.employmentStatus} />

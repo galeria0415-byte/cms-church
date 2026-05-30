@@ -56,6 +56,7 @@ const memberFormSchema = z.object({
   emergencyContactName: z.string().optional(),
   emergencyContactNumber: z.string().optional(),
   spouseName: z.string().optional(),
+  spouseMemberId: z.string().optional(),
   weddingDate: z.string().optional(),
   fatherName: z.string().optional(),
   fatherMemberId: z.string().optional(),
@@ -216,6 +217,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
       emergencyContactName: member?.emergencyContactName ?? "",
       emergencyContactNumber: member?.emergencyContactNumber ?? "",
       spouseName: member?.spouseName ?? "",
+      spouseMemberId: (member as Record<string, unknown> | undefined)?.spouseMemberId as string ?? "",
       weddingDate: member?.weddingDate ?? "",
       fatherName: (member as Record<string, unknown> | undefined)?.fatherName as string ?? "",
       fatherMemberId: (member as Record<string, unknown> | undefined)?.fatherMemberId as string ?? "",
@@ -255,6 +257,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
   });
 
   const profilePhotoUrl = useWatch({ control, name: "profilePhotoUrl" });
+  const watchedSpouseMemberId = useWatch({ control, name: "spouseMemberId" });
   const watchedFatherMemberId = useWatch({ control, name: "fatherMemberId" });
   const watchedMotherMemberId = useWatch({ control, name: "motherMemberId" });
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -583,9 +586,12 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
               </div>
 
               {/* Spouse */}
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <Field label="Spouse Name">
                   <Input placeholder="Full name of spouse" {...register("spouseName")} />
+                </Field>
+                <Field label="Spouse Member ID" hint="Link to existing member record.">
+                  <Input placeholder="e.g. M-0003" {...register("spouseMemberId")} />
                 </Field>
                 <Field label="Wedding Date">
                   <Input type="date" {...register("weddingDate")} />
@@ -972,6 +978,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                 </SummarySection>
                 <SummarySection title="Family">
                   <SummaryRow label="Spouse" value={values.spouseName} />
+                  <SummaryRow label="Spouse Member ID" value={values.spouseMemberId} />
                   <SummaryRow label="Wedding Date" value={values.weddingDate} />
                   <SummaryRow label="Father" value={values.fatherName} />
                   <SummaryRow label="Father Member ID" value={values.fatherMemberId} />

@@ -48,6 +48,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to save file. Check server write permissions." }, { status: 500 });
   }
 
-  const urlBase = process.env.UPLOAD_URL_BASE ?? "/uploads";
+  const urlBase = process.env.UPLOAD_URL_BASE ?? "/api/uploads";
   return NextResponse.json({ url: `${urlBase}/${fileName}` });
 }
