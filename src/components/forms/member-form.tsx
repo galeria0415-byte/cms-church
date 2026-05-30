@@ -96,6 +96,12 @@ const memberFormSchema = z.object({
 
 type MemberFormValues = z.input<typeof memberFormSchema>;
 type ExistingMember = Partial<MemberFormValues> & { id?: string };
+type LinkedMemberLookup = {
+  memberId: string;
+  displayName: string;
+  birthDate?: string | null;
+  deceasedDate?: string | null;
+};
 
 // ── Steps ────────────────────────────────────────────────────────────────────
 
@@ -174,6 +180,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
   const [addrProvince, setAddrProvince] = useState("");
   const [addrCity, setAddrCity] = useState("");
   const [addrBarangay, setAddrBarangay] = useState("");
+  const [linkLookupError, setLinkLookupError] = useState<string | null>(null);
   const [childEntries, setChildEntries] = useState<Array<{ name: string; memberId: string; birthDate?: string }>>(() => {
     try {
       return JSON.parse((member as Record<string, unknown> | undefined)?.childrenLinks as string ?? "[]") as Array<{ name: string; memberId: string; birthDate?: string }>;
@@ -275,6 +282,85 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
     },
     [getValues, setValue],
   );
+
+  const lookupLinkedMember = useCallback(async (memberId: string) => {
+    const normalized = memberId.trim();
+
+    if (!normalized) {
+      return null;
+    }
+
+    const response = await fetch(`/api/members?memberId=${encodeURIComponent(normalized)}`, {
+      cache: "no-store",
+    });
+    const data = (await response.json()) as { error?: string; member?: LinkedMemberLookup };
+
+    if (!response.ok || !data.member) {
+      throw new Error(data.error ?? "Linked member not found.");
+    }
+
+    return data.member;
+  }, []);
+
+  const linkSingleRelation = useCallback(async (
+    memberId: string,
+    fields: {
+      name: keyof MemberFormValues;
+      birthDate?: keyof MemberFormValues;
+      deceasedDate?: keyof MemberFormValues;
+    },
+  ) => {
+    if (!memberId.trim()) {
+      return;
+    }
+
+    try {
+      const linkedMember = await lookupLinkedMember(memberId);
+
+      if (!linkedMember) {
+        return;
+      }
+
+      setLinkLookupError(null);
+      setValue(fields.name, linkedMember.displayName);
+
+      if (fields.birthDate && linkedMember.birthDate) {
+        setValue(fields.birthDate, linkedMember.birthDate);
+      }
+
+      if (fields.deceasedDate && linkedMember.deceasedDate) {
+        setValue(fields.deceasedDate, linkedMember.deceasedDate);
+      }
+    } catch (lookupError) {
+      setLinkLookupError(lookupError instanceof Error ? lookupError.message : "Linked member not found.");
+    }
+  }, [lookupLinkedMember, setValue]);
+
+  const linkChildMember = useCallback(async (memberId: string, index: number) => {
+    if (!memberId.trim()) {
+      return;
+    }
+
+    try {
+      const linkedMember = await lookupLinkedMember(memberId);
+
+      if (!linkedMember) {
+        return;
+      }
+
+      setLinkLookupError(null);
+      setChildEntries((prev) => prev.map((child, childIndex) => childIndex === index
+        ? {
+            ...child,
+            memberId: linkedMember.memberId,
+            name: linkedMember.displayName,
+            birthDate: linkedMember.birthDate ?? child.birthDate,
+          }
+        : child));
+    } catch (lookupError) {
+      setLinkLookupError(lookupError instanceof Error ? lookupError.message : "Linked member not found.");
+    }
+  }, [lookupLinkedMember]);
 
   const handleNext = async () => {
     const fields = STEP_REQUIRED_FIELDS[currentStep] ?? [];
@@ -391,6 +477,9 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
 
       {error && (
         <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      )}
+      {linkLookupError && (
+        <div className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">{linkLookupError}</div>
       )}
 
       <form onSubmit={onSubmit}>
@@ -595,7 +684,12 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                   <Input placeholder="Full name of spouse" {...register("spouseName")} />
                 </Field>
                 <Field label="Spouse Member ID" hint="Link to existing member record.">
-                  <Input placeholder="e.g. M-0003" {...register("spouseMemberId")} />
+                  <Input
+                    placeholder="e.g. M-0003"
+                    {...register("spouseMemberId", {
+                      onBlur: (event) => void linkSingleRelation(event.target.value, { name: "spouseName" }),
+                    })}
+                  />
                 </Field>
                 <Field label="Wedding Date">
                   <Input type="date" {...register("weddingDate")} />
@@ -610,7 +704,16 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                     <Input placeholder="Full name" {...register("fatherName")} />
                   </Field>
                   <Field label="Father's Member ID" hint="Link to existing member record.">
-                    <Input placeholder="e.g. M-0001" {...register("fatherMemberId")} />
+                    <Input
+                      placeholder="e.g. M-0001"
+                      {...register("fatherMemberId", {
+                        onBlur: (event) => void linkSingleRelation(event.target.value, {
+                          name: "fatherName",
+                          birthDate: "fatherBirthDate",
+                          deceasedDate: "fatherDeceasedDate",
+                        }),
+                      })}
+                    />
                   </Field>
                   <Field label="Father's Date of Death">
                     <Input type="date" {...register("fatherDeceasedDate")} />
@@ -631,7 +734,16 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                     <Input placeholder="Full name" {...register("motherName")} />
                   </Field>
                   <Field label="Mother's Member ID" hint="Link to existing member record.">
-                    <Input placeholder="e.g. M-0002" {...register("motherMemberId")} />
+                    <Input
+                      placeholder="e.g. M-0002"
+                      {...register("motherMemberId", {
+                        onBlur: (event) => void linkSingleRelation(event.target.value, {
+                          name: "motherName",
+                          birthDate: "motherBirthDate",
+                          deceasedDate: "motherDeceasedDate",
+                        }),
+                      })}
+                    />
                   </Field>
                   <Field label="Mother's Date of Death">
                     <Input type="date" {...register("motherDeceasedDate")} />
@@ -686,6 +798,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                               updated[index] = { ...updated[index], memberId: e.target.value };
                               setChildEntries(updated);
                             }}
+                            onBlur={(event) => void linkChildMember(event.target.value, index)}
                           />
                         </Field>
                         {!child.memberId && (

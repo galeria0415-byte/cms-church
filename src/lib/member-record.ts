@@ -14,6 +14,16 @@ export type MemberMinistryRole = {
   status?: string;
 };
 
+type LinkedMemberNode = {
+  id: string;
+  memberId: string;
+  firstName: string;
+  middleName: string | null;
+  lastName: string;
+  suffix: string | null;
+  profilePhotoUrl: string | null;
+};
+
 export async function getMemberRecord(id: string) {
   const member = await prisma.member.findUnique({ where: { id } });
 
@@ -45,10 +55,21 @@ export async function getMemberRecord(id: string) {
   const linkedMembers = linkedMemberIds.length
     ? await prisma.member.findMany({
         where: { memberId: { in: linkedMemberIds } },
-        select: { id: true, memberId: true },
+        select: {
+          id: true,
+          memberId: true,
+          firstName: true,
+          middleName: true,
+          lastName: true,
+          suffix: true,
+          profilePhotoUrl: true,
+        },
       })
     : [];
 
+  const linkedByMemberId = Object.fromEntries(
+    linkedMembers.map((linkedMember) => [linkedMember.memberId, linkedMember]),
+  ) as Record<string, LinkedMemberNode>;
   const adminProfileByMemberId = Object.fromEntries(
     linkedMembers.map((linkedMember) => [linkedMember.memberId, `/admin/members/${linkedMember.id}`]),
   ) as Record<string, string>;
@@ -57,11 +78,15 @@ export async function getMemberRecord(id: string) {
     member,
     childrenLinks,
     ministryRoles,
+    spouse: member.spouseMemberId ? linkedByMemberId[member.spouseMemberId] : undefined,
     spouseHref: member.spouseMemberId ? adminProfileByMemberId[member.spouseMemberId] : undefined,
+    father: member.fatherMemberId ? linkedByMemberId[member.fatherMemberId] : undefined,
     fatherHref: member.fatherMemberId ? adminProfileByMemberId[member.fatherMemberId] : undefined,
+    mother: member.motherMemberId ? linkedByMemberId[member.motherMemberId] : undefined,
     motherHref: member.motherMemberId ? adminProfileByMemberId[member.motherMemberId] : undefined,
     resolvedChildren: childrenLinks.map((child) => ({
       ...child,
+      linkedMember: child.memberId ? linkedByMemberId[child.memberId] : undefined,
       href: child.memberId ? adminProfileByMemberId[child.memberId] : undefined,
     })),
   };

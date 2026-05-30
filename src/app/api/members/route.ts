@@ -1,9 +1,33 @@
 import { NextResponse } from "next/server";
 
 import { requireRole } from "@/lib/auth";
+import { findMemberByMemberId, hydrateLinkedMemberFields } from "@/lib/member-links";
 import { MEMBER_MANAGER_ROLES } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { memberSchema } from "@/lib/validators/member";
+
+export async function GET(request: Request) {
+  await requireRole(MEMBER_MANAGER_ROLES);
+  const { searchParams } = new URL(request.url);
+  const memberId = searchParams.get("memberId")?.trim();
+
+  if (!memberId) {
+    return NextResponse.json({ error: "Member ID is required." }, { status: 400 });
+  }
+
+  const member = await findMemberByMemberId(memberId);
+
+  if (!member) {
+    return NextResponse.json({ error: "Linked member not found." }, { status: 404 });
+  }
+
+  return NextResponse.json({
+    member: {
+      ...member,
+      displayName: `${member.firstName}${member.middleName ? ` ${member.middleName}` : ""} ${member.lastName}${member.suffix ? ` ${member.suffix}` : ""}`.trim(),
+    },
+  });
+}
 
 export async function POST(request: Request) {
   const session = await requireRole(MEMBER_MANAGER_ROLES);
@@ -15,8 +39,9 @@ export async function POST(request: Request) {
   }
 
   try {
+    const hydratedData = await hydrateLinkedMemberFields(parsed.data);
     const member = await prisma.member.create({
-      data: parsed.data,
+      data: hydratedData,
     });
 
     await prisma.activityLog.create({

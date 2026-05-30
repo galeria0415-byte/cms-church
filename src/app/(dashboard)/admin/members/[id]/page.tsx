@@ -43,6 +43,28 @@ function Row({ label, value }: { label: string; value?: React.ReactNode }) {
   );
 }
 
+function FamilyTreeCard({
+  label,
+  name,
+  memberId,
+  href,
+}: {
+  label: string;
+  name?: string | null;
+  memberId?: string | null;
+  href?: string;
+}) {
+  const content = (
+    <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface-subtle)] px-4 py-3 text-center">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-[var(--ink)]">{name || "-"}</p>
+      {memberId ? <p className="mt-1 text-xs text-[var(--muted)]">{memberId}</p> : null}
+    </div>
+  );
+
+  return href ? <Link href={href}>{content}</Link> : content;
+}
+
 export default async function MemberDetailPage({ params }: { params: Params }) {
   const { id } = await params;
   const record = await getMemberRecord(id);
@@ -53,8 +75,11 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
 
   const {
     member,
+    spouse,
     spouseHref,
+    father,
     fatherHref,
+    mother,
     motherHref,
     resolvedChildren,
     ministryRoles,
@@ -111,9 +136,6 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
             <ActionLink href={`/print/members/${member.id}/certificate/baptism`}>
               Baptism certificate
             </ActionLink>
-            <ActionLink href={`/print/members/${member.id}/certificate/confirmation`}>
-              Confirmation certificate
-            </ActionLink>
             <ArchiveButton id={member.id} />
             <DeleteButton
               apiPath={`/api/members/${member.id}?hard=true`}
@@ -124,6 +146,48 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
           </div>
         </div>
       </section>
+
+      <Section title="Family Tree">
+        <div className="space-y-5 py-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <FamilyTreeCard
+              label="Father"
+              name={father ? fullName(father) : member.fatherName}
+              memberId={member.fatherMemberId}
+              href={fatherHref}
+            />
+            <FamilyTreeCard
+              label="Mother"
+              name={mother ? fullName(mother) : member.motherName}
+              memberId={member.motherMemberId}
+              href={motherHref}
+            />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FamilyTreeCard label="Member" name={fullName(member)} memberId={member.memberId} />
+            <FamilyTreeCard
+              label="Spouse"
+              name={spouse ? fullName(spouse) : member.spouseName}
+              memberId={member.spouseMemberId}
+              href={spouseHref}
+            />
+          </div>
+          <div>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Children</p>
+            <div className="grid gap-4 md:grid-cols-3">
+              {resolvedChildren.length ? resolvedChildren.map((child, index) => (
+                <FamilyTreeCard
+                  key={`${child.memberId ?? child.name}-${index}`}
+                  label={`Child ${index + 1}`}
+                  name={child.linkedMember ? fullName(child.linkedMember) : child.name}
+                  memberId={child.memberId}
+                  href={child.href}
+                />
+              )) : <FamilyTreeCard label="Children" name="-" />}
+            </div>
+          </div>
+        </div>
+      </Section>
 
       <Section title="Personal & Contact">
         <Row label="Member ID" value={member.memberId} />
@@ -146,20 +210,20 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
       <Section title="Family">
         <Row
           label="Spouse"
-          value={spouseHref ? <Link href={spouseHref} className="font-medium text-[var(--accent)] hover:underline">{member.spouseName || "-"}</Link> : member.spouseName}
+          value={spouseHref ? <Link href={spouseHref} className="font-medium text-[var(--accent)] hover:underline">{spouse ? fullName(spouse) : member.spouseName || "-"}</Link> : spouse ? fullName(spouse) : member.spouseName}
         />
         <Row label="Spouse member ID" value={member.spouseMemberId} />
         <Row label="Wedding date" value={formatDate(member.weddingDate)} />
         <Row
           label="Father's name"
-          value={fatherHref ? <Link href={fatherHref} className="font-medium text-[var(--accent)] hover:underline">{member.fatherName || "-"}</Link> : member.fatherName}
+          value={fatherHref ? <Link href={fatherHref} className="font-medium text-[var(--accent)] hover:underline">{father ? fullName(father) : member.fatherName || "-"}</Link> : father ? fullName(father) : member.fatherName}
         />
         <Row label="Father's member ID" value={member.fatherMemberId} />
         <Row label="Father's date of birth" value={formatDate(member.fatherBirthDate)} />
         <Row label="Father's date of death" value={formatDate(member.fatherDeceasedDate)} />
         <Row
           label="Mother's name"
-          value={motherHref ? <Link href={motherHref} className="font-medium text-[var(--accent)] hover:underline">{member.motherName || "-"}</Link> : member.motherName}
+          value={motherHref ? <Link href={motherHref} className="font-medium text-[var(--accent)] hover:underline">{mother ? fullName(mother) : member.motherName || "-"}</Link> : mother ? fullName(mother) : member.motherName}
         />
         <Row label="Mother's member ID" value={member.motherMemberId} />
         <Row label="Mother's date of birth" value={formatDate(member.motherBirthDate)} />
@@ -171,11 +235,11 @@ export default async function MemberDetailPage({ params }: { params: Params }) {
               {resolvedChildren.map((child, index) =>
                 child.href ? (
                   <Link key={`${child.memberId}-${index}`} href={child.href} className="rounded-full bg-[var(--surface-subtle)] px-3 py-1 text-sm font-medium text-[var(--accent)] hover:bg-[var(--sand)]">
-                    {child.name || "(unnamed)"}
+                    {child.linkedMember ? fullName(child.linkedMember) : child.name || "(unnamed)"}
                   </Link>
                 ) : (
                   <span key={`${child.name}-${index}`} className="rounded-full bg-[var(--surface-subtle)] px-3 py-1 text-sm text-[var(--ink)]">
-                    {child.name || "(unnamed)"}
+                    {child.linkedMember ? fullName(child.linkedMember) : child.name || "(unnamed)"}
                   </span>
                 ),
               )}

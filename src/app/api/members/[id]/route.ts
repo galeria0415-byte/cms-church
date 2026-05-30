@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireRole } from "@/lib/auth";
+import { hydrateLinkedMemberFields } from "@/lib/member-links";
 import { canDeleteMember, MEMBER_MANAGER_ROLES } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { memberSchema } from "@/lib/validators/member";
@@ -37,9 +38,10 @@ export async function PUT(request: Request, { params }: Params) {
   }
 
   try {
+    const hydratedData = await hydrateLinkedMemberFields(parsed.data);
     const member = await prisma.member.update({
       where: { id },
-      data: parsed.data,
+      data: hydratedData,
     });
 
     await prisma.activityLog.create({
