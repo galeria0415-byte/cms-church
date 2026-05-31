@@ -77,6 +77,13 @@ export type OrderOfWorshipDocument = {
   sections: WorshipSection[];
 };
 
+export type ResponsiveSpeakerTheme = {
+  label: string;
+  accent: string;
+  soft: string;
+  border: string;
+};
+
 export function createWorshipId(prefix: string) {
   const uuid = typeof globalThis.crypto?.randomUUID === "function"
     ? globalThis.crypto.randomUUID().slice(0, 8)
@@ -96,6 +103,30 @@ export function getSpeakerLabel(line: Pick<WorshipResponsiveLine, "speaker" | "c
     CHURCH: "Church",
     ALL: "All",
   }[line.speaker];
+}
+
+export function getResponsiveSpeakerTheme(line: Pick<WorshipResponsiveLine, "speaker" | "customSpeaker">): ResponsiveSpeakerTheme {
+  if (line.speaker === "PREACHER") {
+    return { label: getSpeakerLabel(line), accent: "#7c2d12", soft: "#fff1e8", border: "#fdba74" };
+  }
+
+  if (line.speaker === "CHURCH") {
+    return { label: getSpeakerLabel(line), accent: "#14532d", soft: "#ecfdf3", border: "#86efac" };
+  }
+
+  if (line.speaker === "ALL") {
+    return { label: getSpeakerLabel(line), accent: "#5b21b6", soft: "#f3e8ff", border: "#c4b5fd" };
+  }
+
+  if (line.speaker === "CUSTOM") {
+    return { label: getSpeakerLabel(line), accent: "#0f766e", soft: "#ecfeff", border: "#67e8f9" };
+  }
+
+  return { label: getSpeakerLabel(line), accent: "#1d4ed8", soft: "#eff6ff", border: "#93c5fd" };
+}
+
+export function isScriptureReadingSection(section: Pick<WorshipSection, "title" | "type">) {
+  return section.type === "RESPONSIVE" && section.title.trim().toLowerCase() === "scripture reading";
 }
 
 function extractSectionText(section: WorshipSection) {
@@ -351,13 +382,161 @@ export function createDefaultOrderOfWorship(): OrderOfWorshipDocument {
   };
 }
 
+function asString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function asBoolean(value: unknown, fallback = false) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function normalizeResponsiveLine(value: unknown): WorshipResponsiveLine {
+  const source = (value && typeof value === "object") ? value as Partial<WorshipResponsiveLine> : {};
+  const speaker = WORSHIP_SPEAKERS.includes(source.speaker as WorshipSpeaker)
+    ? source.speaker as WorshipSpeaker
+    : "LITURGIST";
+
+  return {
+    id: asString(source.id) || createWorshipId("line"),
+    speaker,
+    customSpeaker: asString(source.customSpeaker) || undefined,
+    text: asString(source.text),
+  };
+}
+
+function normalizeHymnPart(value: unknown, index: number): WorshipHymnPart {
+  const source = (value && typeof value === "object") ? value as Partial<WorshipHymnPart> : {};
+
+  return {
+    id: asString(source.id) || createWorshipId("part"),
+    label: asString(source.label) || `Stanza ${index + 1}`,
+    text: asString(source.text),
+  };
+}
+
+function normalizeListItem(value: unknown): WorshipListItem {
+  const source = (value && typeof value === "object") ? value as Partial<WorshipListItem> : {};
+
+  return {
+    id: asString(source.id) || createWorshipId("item"),
+    title: asString(source.title) || undefined,
+    text: asString(source.text),
+  };
+}
+
+function normalizeSection(value: unknown, fallbackSection?: WorshipSection): WorshipSection {
+  const fallback = fallbackSection ?? createSectionTemplate("TEXT");
+  const source = (value && typeof value === "object") ? value as Partial<WorshipSection> : {};
+  const type = WORSHIP_SECTION_TYPES.includes(source.type as WorshipSectionType)
+    ? source.type as WorshipSectionType
+    : fallback.type;
+  const title = asString(source.title) || fallback.title;
+  const note = asString(source.note) || undefined;
+  const id = asString(source.id) || createWorshipId("section");
+  const stand = asBoolean(source.stand, fallback.stand);
+
+  if (type === "RESPONSIVE") {
+    const sourceLines = (source as Partial<WorshipResponsiveSection>).lines;
+    const fallbackLines = fallback.type === "RESPONSIVE"
+      ? fallback.lines
+      : [{ id: createWorshipId("line"), speaker: "LITURGIST", text: "" }];
+    const linesSource: unknown[] = Array.isArray(sourceLines)
+      ? sourceLines
+      : fallbackLines;
+
+    return {
+      id,
+      type,
+      title,
+      stand,
+      note,
+      lines: linesSource.map((line) => normalizeResponsiveLine(line)),
+    };
+  }
+
+  if (type === "HYMN") {
+    const sourceParts = (source as Partial<WorshipHymnSection>).parts;
+    const fallbackParts = fallback.type === "HYMN"
+      ? fallback.parts
+      : [{ id: createWorshipId("part"), label: "Stanza 1", text: "" }];
+    const partsSource: unknown[] = Array.isArray(sourceParts)
+      ? sourceParts
+      : fallbackParts;
+
+    return {
+      id,
+      type,
+      title,
+      stand,
+      note,
+      hymnSource: asString((source as Partial<WorshipHymnSection>).hymnSource),
+      songTitle: asString((source as Partial<WorshipHymnSection>).songTitle),
+      parts: partsSource.map((part, index) => normalizeHymnPart(part, index)),
+    };
+  }
+
+  if (type === "LIST") {
+    const sourceItems = (source as Partial<WorshipListSection>).items;
+    const fallbackItems = fallback.type === "LIST"
+      ? fallback.items
+      : [{ id: createWorshipId("item"), title: "", text: "" }];
+    const itemsSource: unknown[] = Array.isArray(sourceItems)
+      ? sourceItems
+      : fallbackItems;
+
+    return {
+      id,
+      type,
+      title,
+      stand,
+      note,
+      items: itemsSource.map((item) => normalizeListItem(item)),
+    };
+  }
+
+  return {
+    id,
+    type: "TEXT",
+    title,
+    stand,
+    note,
+    body: asString((source as Partial<WorshipTextSection>).body),
+  };
+}
+
+function normalizeDocument(value: unknown): OrderOfWorshipDocument {
+  const fallback = createDefaultOrderOfWorship();
+  const source = (value && typeof value === "object") ? value as Partial<OrderOfWorshipDocument> : {};
+  const sourceHeader = (source.header && typeof source.header === "object") ? source.header as Partial<WorshipHeader> : {};
+  const sourceSections = Array.isArray(source.sections) ? source.sections : [];
+
+  return {
+    header: {
+      leftLogoUrl: asString(sourceHeader.leftLogoUrl),
+      rightLogoUrl: asString(sourceHeader.rightLogoUrl),
+      centerLines: Array.isArray(sourceHeader.centerLines)
+        ? sourceHeader.centerLines.map((line) => asString(line)).filter((line) => line.length > 0)
+        : fallback.header.centerLines,
+      monthTheme: asString(sourceHeader.monthTheme),
+      orderTitle: asString(sourceHeader.orderTitle) || fallback.header.orderTitle,
+      orderSubtitle: asString(sourceHeader.orderSubtitle),
+      sundayTheme: asString(sourceHeader.sundayTheme),
+      serviceDateText: asString(sourceHeader.serviceDateText),
+      participantLines: Array.isArray(sourceHeader.participantLines)
+        ? sourceHeader.participantLines.map((line) => asString(line)).filter((line) => line.length > 0)
+        : [],
+    },
+    sections: (sourceSections.length ? sourceSections : fallback.sections).map((section, index) => normalizeSection(section, fallback.sections[index])),
+  };
+}
+
 export function parseOrderOfWorshipDocument(value?: string | null): OrderOfWorshipDocument {
   if (!value) {
     return createDefaultOrderOfWorship();
   }
 
   try {
-    return JSON.parse(value) as OrderOfWorshipDocument;
+    return normalizeDocument(JSON.parse(value));
   } catch {
     return createDefaultOrderOfWorship();
   }

@@ -18,9 +18,10 @@ export default async function PrintOrderOfWorshipPage({ params }: { params: Para
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 print:max-w-none print:px-0 print:py-0">
+    <div className="mx-auto max-w-[14in] px-4 py-6 print:max-w-none print:px-0 print:py-0">
+      <style>{`@page { size: letter landscape; margin: 0.45in; }`}</style>
       <PrintToolbar />
-      <OrderOfWorshipDocumentView title={order.title} document={order.content} className="print:shadow-none" />
+      <OrderOfWorshipDocumentView title={order.title} document={order.content} className="print:rounded-none print:border-0 print:shadow-none" printCompact />
     </div>
   );
 }

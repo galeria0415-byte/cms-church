@@ -1,22 +1,68 @@
-import type { OrderOfWorshipDocument, WorshipHymnSection, WorshipListSection, WorshipResponsiveSection, WorshipSection, WorshipTextSection } from "@/lib/order-of-worship";
-import { getSpeakerLabel } from "@/lib/order-of-worship";
+import type { OrderOfWorshipDocument, WorshipHymnSection, WorshipListSection, WorshipResponsiveLine, WorshipResponsiveSection, WorshipSection, WorshipTextSection } from "@/lib/order-of-worship";
+import { getResponsiveSpeakerTheme, getSpeakerLabel, isScriptureReadingSection } from "@/lib/order-of-worship";
 import { cn } from "@/lib/utils";
 
 function renderSectionNumber(index: number) {
   return String(index + 1).padStart(2, "0");
 }
 
+function RichText({ text, scripture = false }: { text: string; scripture?: boolean }) {
+  const lines = text.split("\n");
+
+  return (
+    <div className="space-y-2">
+      {lines.map((line, index) => {
+        const match = line.match(/^(\d+[a-z]?)\s+(.*)$/i);
+
+        if (scripture && match) {
+          return (
+            <p key={`${line}-${index}`} className="flex items-start gap-2 leading-7 text-inherit">
+              <span className="mt-0.5 inline-flex min-w-7 items-center justify-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">{match[1]}</span>
+              <span>{match[2]}</span>
+            </p>
+          );
+        }
+
+        return <p key={`${line}-${index}`} className="whitespace-pre-wrap text-inherit">{line || "\u00A0"}</p>;
+      })}
+    </div>
+  );
+}
+
 function SectionText({ section }: { section: WorshipTextSection }) {
-  return <p className="whitespace-pre-wrap text-[15px] leading-7 text-slate-700">{section.body}</p>;
+  return <div className="text-[15px] leading-7 text-slate-700"><RichText text={section.body} /></div>;
+}
+
+function ScriptureReadingLine({ line }: { line: WorshipResponsiveLine }) {
+  const theme = getResponsiveSpeakerTheme(line);
+
+  return (
+    <div className="rounded-2xl border p-4" style={{ backgroundColor: theme.soft, borderColor: theme.border }}>
+      <span className="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ backgroundColor: theme.border, color: theme.accent }}>
+        {getSpeakerLabel(line)}
+      </span>
+      <div className="mt-3 font-serif text-[17px] leading-8 text-slate-800">
+        <RichText text={line.text} scripture />
+      </div>
+    </div>
+  );
 }
 
 function SectionResponsive({ section }: { section: WorshipResponsiveSection }) {
+  if (isScriptureReadingSection(section)) {
+    return (
+      <div className="space-y-4">
+        {section.lines.map((line) => <ScriptureReadingLine key={line.id} line={line} />)}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {section.lines.map((line) => (
-        <div key={line.id} className="grid gap-1 md:grid-cols-[160px_minmax(0,1fr)] md:gap-4">
-          <div className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">{getSpeakerLabel(line)}</div>
-          <div className="whitespace-pre-wrap text-[15px] leading-7 text-slate-800">{line.text}</div>
+        <div key={line.id} className="grid gap-1 rounded-2xl border p-4 md:grid-cols-[160px_minmax(0,1fr)] md:gap-4" style={{ backgroundColor: getResponsiveSpeakerTheme(line).soft, borderColor: getResponsiveSpeakerTheme(line).border }}>
+          <div className="text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: getResponsiveSpeakerTheme(line).accent }}>{getSpeakerLabel(line)}</div>
+          <div className="text-[15px] leading-7 text-slate-800"><RichText text={line.text} /></div>
         </div>
       ))}
     </div>
@@ -36,7 +82,7 @@ function SectionHymn({ section }: { section: WorshipHymnSection }) {
         {section.parts.map((part) => (
           <div key={part.id}>
             <p className="text-sm font-semibold text-slate-700">{part.label}</p>
-            <p className="mt-1 whitespace-pre-wrap text-[15px] leading-7 text-slate-700">{part.text}</p>
+            <div className="mt-1 text-[15px] leading-7 text-slate-700"><RichText text={part.text} /></div>
           </div>
         ))}
       </div>
@@ -50,7 +96,7 @@ function SectionList({ section }: { section: WorshipListSection }) {
       {section.items.map((item) => (
         <div key={item.id}>
           {item.title ? <p className="text-sm font-semibold uppercase tracking-[0.08em] text-slate-600">{item.title}</p> : null}
-          <p className="mt-1 whitespace-pre-wrap text-[15px] leading-7 text-slate-700">{item.text}</p>
+          <div className="mt-1 text-[15px] leading-7 text-slate-700"><RichText text={item.text} /></div>
         </div>
       ))}
     </div>
@@ -77,14 +123,16 @@ export function OrderOfWorshipDocumentView({
   title,
   document,
   className,
+  printCompact = false,
 }: {
   title?: string;
   document: OrderOfWorshipDocument;
   className?: string;
+  printCompact?: boolean;
 }) {
   return (
     <div className={cn("overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_35px_90px_-55px_rgba(15,23,42,0.45)]", className)}>
-      <div className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(236,221,196,0.55),_rgba(255,255,255,0.96)_58%)] px-6 py-10 sm:px-10">
+      <div className={cn("relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(236,221,196,0.55),_rgba(255,255,255,0.96)_58%)] px-6 py-10 sm:px-10", printCompact && "px-5 py-6")}>
         <div className="grid gap-6 md:grid-cols-[120px_minmax(0,1fr)_120px] md:items-start">
           <div className="flex justify-center md:justify-start">
             {document.header.leftLogoUrl ? <img src={document.header.leftLogoUrl} alt="Left logo" className="h-20 w-20 object-contain" /> : <div className="h-20 w-20 rounded-full border border-dashed border-slate-300" />} 
@@ -111,9 +159,9 @@ export function OrderOfWorshipDocumentView({
         </div>
       </div>
 
-      <div className="space-y-8 px-6 py-8 sm:px-10 sm:py-10">
+      <div className={cn("space-y-8 px-6 py-8 sm:px-10 sm:py-10", printCompact && "columns-2 gap-6 space-y-0 px-5 py-6")}>
         {document.sections.map((section, index) => (
-          <section key={section.id} className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(248,245,240,0.9))] p-5 sm:p-6">
+          <section key={section.id} className={cn("rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(248,245,240,0.9))] p-5 sm:p-6", printCompact && "mb-5 break-inside-avoid-column rounded-[20px] p-4")}>
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
               <div className="space-y-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Section {renderSectionNumber(index)}</p>
