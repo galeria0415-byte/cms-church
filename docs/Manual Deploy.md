@@ -27,3 +27,13 @@ Keep these:
 .env.production if you use it on the server
 public/uploads
 data if it contains server-side data you want to preserve
+
+Retain
+
+data
+public
+.cpanel-deploy
+.env
+.env.prod
+.htaccess
+.package-lock

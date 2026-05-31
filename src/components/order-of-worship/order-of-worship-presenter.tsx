@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Maximize, Minimize, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -31,7 +31,7 @@ function formatManilaDateTime(value: Date) {
     hour12: true,
   }).format(value);
 
-  return { date, time: `${time} GMT+8` };
+  return { date, time };
 }
 
 function PresenterRichText({ text, scripture = false }: { text: string; scripture?: boolean }) {
@@ -95,14 +95,14 @@ function ScriptureLine({ line }: { line: WorshipResponsiveLine }) {
 function SectionSlide({ section }: { section: WorshipSection }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-1 flex-col justify-center text-white">
-      {section.stand ? (
-        <div className="inline-flex w-fit items-center gap-3 rounded-full border border-[#f6d28a]/45 bg-[linear-gradient(135deg,rgba(246,210,138,0.24),rgba(255,255,255,0.08))] px-5 py-2 text-[#ffe7b8] shadow-[0_18px_40px_-28px_rgba(246,210,138,0.9)] backdrop-blur-md">
-          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#f6d28a] shadow-[0_0_18px_rgba(246,210,138,0.9)]" />
-          <span className="text-sm font-semibold uppercase tracking-[0.32em]">Please stand, congregation</span>
-        </div>
-      ) : (
-        <p className="text-sm uppercase tracking-[0.35em] text-[#f0d6a4]">Order of Worship</p>
-      )}
+      <div className="flex items-center gap-4">
+        {section.stand ? (
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-[#f6d28a]/55 bg-[radial-gradient(circle_at_center,rgba(246,210,138,0.38),rgba(255,255,255,0.06)_72%)] text-[#ffe7b8] shadow-[0_0_28px_rgba(246,210,138,0.75)] backdrop-blur-md">
+            <Sparkles className="h-7 w-7" />
+          </div>
+        ) : null}
+        {!section.stand ? <p className="text-sm uppercase tracking-[0.35em] text-[#f0d6a4]">Order of Worship</p> : null}
+      </div>
       <h1 className="mt-4 text-5xl font-semibold uppercase leading-tight md:text-7xl">{section.stand ? "* " : ""}{section.title}</h1>
       {section.note ? <p className="mt-4 text-xl italic text-white/72">{section.note}</p> : null}
       <div className={section.stand ? "mt-10 rounded-[32px] border border-[#f6d28a]/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08))] p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10" : "mt-10 rounded-[32px] border border-white/12 bg-white/8 p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10"}>
@@ -200,12 +200,12 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
       <div className="relative z-10 flex min-h-screen flex-col px-6 py-5 md:px-10">
         <div className="flex items-center justify-between text-white/70">
           <div>
-            <p className="text-sm uppercase tracking-[0.28em]">{currentDateTime.date}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em]">
-              <span style={{ color: theme.accentSoft }}>{theme.label}</span>
+            <div className="flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.22em]">
+              <span>{currentDateTime.date}</span>
               <span className="text-white/38">•</span>
               <span className="text-white/72">{currentDateTime.time}</span>
             </div>
+            <p className="mt-1 text-xs uppercase tracking-[0.22em]" style={{ color: theme.accentSoft }}>{theme.label}</p>
           </div>
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => void toggleFullscreen()} className="inline-flex items-center gap-2 rounded-full border border-white/12 px-4 py-2 text-sm transition hover:bg-white/10">

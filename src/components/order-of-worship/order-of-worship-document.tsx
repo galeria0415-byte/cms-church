@@ -131,7 +131,7 @@ export function OrderOfWorshipDocumentView({
   printCompact?: boolean;
 }) {
   return (
-    <div className={cn("overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_35px_90px_-55px_rgba(15,23,42,0.45)]", printCompact && "relative before:absolute before:bottom-0 before:left-1/2 before:top-0 before:w-px before:-translate-x-1/2 before:bg-[linear-gradient(180deg,rgba(51,65,85,0),rgba(51,65,85,0.18),rgba(51,65,85,0))]", className)}>
+    <div className={cn("overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_35px_90px_-55px_rgba(15,23,42,0.45)]", printCompact && "relative min-h-[7.6in] before:absolute before:bottom-0 before:left-1/2 before:top-0 before:w-px before:-translate-x-1/2 before:bg-[linear-gradient(180deg,rgba(51,65,85,0),rgba(51,65,85,0.18),rgba(51,65,85,0))]", className)}>
       <div className={cn("relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(236,221,196,0.55),_rgba(255,255,255,0.96)_58%)] px-6 py-10 sm:px-10", printCompact && "border-b border-slate-300 bg-white px-6 py-5")}>
         <div className="grid gap-6 md:grid-cols-[120px_minmax(0,1fr)_120px] md:items-start">
           <div className="flex justify-center md:justify-start">
@@ -159,7 +159,7 @@ export function OrderOfWorshipDocumentView({
         </div>
       </div>
 
-      <div className={cn("space-y-8 px-6 py-8 sm:px-10 sm:py-10", printCompact && "columns-2 gap-10 [column-fill:balance] [column-rule:1px_solid_rgba(148,163,184,0.35)] space-y-0 px-6 py-5 font-serif text-[13px] leading-5")}>
+      <div className={cn("space-y-8 px-6 py-8 sm:px-10 sm:py-10", printCompact && "columns-2 gap-10 [column-fill:balance] [column-rule:1px_solid_rgba(148,163,184,0.35)] space-y-0 px-6 py-5 font-serif text-[13px] leading-5 print:h-[6.55in]")}>
         {document.sections.map((section, index) => (
           <section key={section.id} className={cn("rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(248,245,240,0.9))] p-5 sm:p-6", printCompact && "mb-4 break-inside-avoid-column rounded-none border-0 bg-transparent p-0 shadow-none")}>
             <div className={cn("flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4", printCompact && "border-b-0 pb-1")}>
