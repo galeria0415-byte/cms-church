@@ -2,6 +2,17 @@ import type { OrderOfWorshipDocument, WorshipHymnSection, WorshipListSection, Wo
 import { getResponsiveSpeakerTheme, getSpeakerLabel, isScriptureReadingSection } from "@/lib/order-of-worship";
 import { cn } from "@/lib/utils";
 
+function StandingCrossMark({ compact = false }: { compact?: boolean }) {
+  return (
+    <span className={cn("inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700", compact && "h-5 w-5") }>
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={cn("h-4 w-4", compact && "h-3 w-3")} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3v18" />
+        <path d="M7 8h10" />
+      </svg>
+    </span>
+  );
+}
+
 function renderSectionNumber(index: number) {
   return String(index + 1).padStart(2, "0");
 }
@@ -165,7 +176,10 @@ export function OrderOfWorshipDocumentView({
             <div className={cn("flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4", printCompact && "border-b-0 pb-1")}>
               <div className="space-y-1">
                 {!printCompact ? <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Section {renderSectionNumber(index)}</p> : null}
-                <h2 className={cn("text-xl font-semibold uppercase text-slate-900", printCompact && "text-[15px] leading-5")}>{section.stand ? "* " : ""}{section.title}</h2>
+                <div className="flex items-center gap-2">
+                  {section.stand ? <StandingCrossMark compact={printCompact} /> : null}
+                  <h2 className={cn("text-xl font-semibold uppercase text-slate-900", printCompact && "text-[15px] leading-5")}>{section.title}</h2>
+                </div>
               </div>
               {section.note ? <p className={cn("max-w-sm text-right text-sm italic text-slate-500", printCompact && "max-w-none text-left text-[11px]")}>{section.note}</p> : null}
             </div>

@@ -131,7 +131,7 @@ function SectionEditor({
 
       <label className="mt-4 flex items-center gap-3 text-sm font-medium text-[var(--ink)]">
         <input type="checkbox" checked={section.stand} onChange={(event) => onChange({ ...section, stand: event.target.checked })} />
-        Mark with * for congregation standing
+        Check for congregation standing
       </label>
 
       {section.type === "TEXT" ? (
