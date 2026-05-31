@@ -139,7 +139,7 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
   if (isBetween(date, epiphanyStart, addDays(ashWednesday, -1))) {
     return {
       season: "EPIPHANY",
-      label: "Epiphany / Ordinary Time",
+      label: "Epiphany",
       accent: "#3e7e3d",
       accentSoft: "#bfe6b2",
       glow: "rgba(191,230,178,0.3)",
@@ -150,7 +150,7 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
   if (date > pentecost || date < advent) {
     return {
       season: "ORDINARY_TIME",
-      label: "Pentecost / Ordinary Time",
+      label: "Pentecost",
       accent: "#3f8c4f",
       accentSoft: "#caefc5",
       glow: "rgba(202,239,197,0.28)",
@@ -160,7 +160,7 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
 
   return {
     season: "ORDINARY_TIME",
-    label: "Pentecost / Ordinary Time",
+    label: "Pentecost",
     accent: "#3f8c4f",
     accentSoft: "#caefc5",
     glow: "rgba(202,239,197,0.28)",

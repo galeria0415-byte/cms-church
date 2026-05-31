@@ -6,14 +6,20 @@ import { useRouter } from "next/navigation";
 
 import { LiturgicalAnimatedBackground } from "@/components/order-of-worship/liturgical-animated-background";
 import { getLiturgicalTheme } from "@/lib/liturgical-calendar";
-import type { OrderOfWorshipDocument, WorshipResponsiveLine, WorshipSection } from "@/lib/order-of-worship";
+import type { OrderOfWorshipDocument, WorshipHymnSection, WorshipListSection, WorshipResponsiveLine, WorshipResponsiveSection, WorshipSection, WorshipTextSection } from "@/lib/order-of-worship";
 import { getResponsiveSpeakerTheme, getSpeakerLabel, isScriptureReadingSection } from "@/lib/order-of-worship";
 
 type Slide =
   | { id: string; kind: "HEADER"; title: string }
-  | { id: string; kind: "SECTION"; title: string; section: WorshipSection };
+  | { id: string; kind: "SECTION"; title: string; section: WorshipSection; continuationIndex: number; continuationCount: number };
 
 const MANILA_TIME_ZONE = "Asia/Manila";
+const MAX_TEXT_CHARS = 700;
+const MAX_TEXT_LINES = 8;
+const MAX_SCRIPTURE_LINES = 2;
+const MAX_RESPONSIVE_LINES = 3;
+const MAX_HYMN_PARTS = 2;
+const MAX_LIST_ITEMS = 3;
 
 function formatManilaDateTime(value: Date) {
   const date = new Intl.DateTimeFormat("en-PH", {
@@ -32,6 +38,117 @@ function formatManilaDateTime(value: Date) {
   }).format(value);
 
   return { date, time };
+}
+
+function formatServiceDateText(serviceDate?: Date | string | null, serviceTime?: string | null) {
+  const parts: string[] = [];
+
+  if (serviceDate) {
+    parts.push(new Intl.DateTimeFormat("en-PH", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(serviceDate)));
+  }
+
+  if (serviceTime?.trim()) {
+    parts.push(serviceTime.trim());
+  }
+
+  return parts.join(", ");
+}
+
+function splitSentenceAware(line: string, maxChars: number) {
+  if (line.length <= maxChars) {
+    return [line];
+  }
+
+  const sentences = line.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const source = sentences.length > 1 ? sentences : line.split(/\s+/).filter(Boolean);
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const token of source) {
+    const next = current ? `${current}${sentences.length > 1 ? " " : " "}${token}` : token;
+    if (current && next.length > maxChars) {
+      chunks.push(current);
+      current = token;
+      continue;
+    }
+
+    current = next;
+  }
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks.length ? chunks : [line];
+}
+
+function chunkTextContent(text: string, maxChars = MAX_TEXT_CHARS, maxLines = MAX_TEXT_LINES) {
+  const units = text
+    .split("\n")
+    .flatMap((line) => (line.trim() ? splitSentenceAware(line.trim(), maxChars) : [""]))
+    .filter((unit, index, list) => unit || index === 0 || list[index - 1] !== "");
+
+  if (!units.length) {
+    return [""];
+  }
+
+  const chunks: string[] = [];
+  let current: string[] = [];
+  let currentChars = 0;
+
+  function pushCurrent() {
+    if (!current.length) {
+      return;
+    }
+
+    chunks.push(current.join("\n").trim());
+    current = [];
+    currentChars = 0;
+  }
+
+  for (const unit of units) {
+    const projectedChars = currentChars + unit.length;
+    if (current.length && (current.length + 1 > maxLines || projectedChars > maxChars)) {
+      pushCurrent();
+    }
+
+    current.push(unit);
+    currentChars += unit.length;
+  }
+
+  pushCurrent();
+  return chunks.length ? chunks : [text];
+}
+
+function chunkArray<T>(items: T[], maxItems: number) {
+  const chunks: T[][] = [];
+
+  for (let index = 0; index < items.length; index += maxItems) {
+    chunks.push(items.slice(index, index + maxItems));
+  }
+
+  return chunks.length ? chunks : [items];
+}
+
+function paginateSection(section: WorshipSection) {
+  if (section.type === "TEXT") {
+    return chunkTextContent(section.body).map((body) => ({ ...section, body })) as WorshipTextSection[];
+  }
+
+  if (section.type === "RESPONSIVE") {
+    return chunkArray(section.lines, isScriptureReadingSection(section) ? MAX_SCRIPTURE_LINES : MAX_RESPONSIVE_LINES)
+      .map((lines) => ({ ...section, lines })) as WorshipResponsiveSection[];
+  }
+
+  if (section.type === "HYMN") {
+    return chunkArray(section.parts, MAX_HYMN_PARTS).map((parts) => ({ ...section, parts })) as WorshipHymnSection[];
+  }
+
+  return chunkArray(section.items, MAX_LIST_ITEMS).map((items) => ({ ...section, items })) as WorshipListSection[];
 }
 
 function PresenterRichText({ text, scripture = false }: { text: string; scripture?: boolean }) {
@@ -58,9 +175,9 @@ function PresenterRichText({ text, scripture = false }: { text: string; scriptur
   );
 }
 
-function HeaderSlide({ worshipDocument }: { worshipDocument: OrderOfWorshipDocument }) {
+function HeaderSlide({ worshipDocument, serviceDateText }: { worshipDocument: OrderOfWorshipDocument; serviceDateText?: string }) {
   return (
-    <div className="mx-auto flex max-w-6xl flex-1 flex-col text-center text-white">
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-1 flex-col justify-center text-center text-white">
       <div className="flex items-start justify-between gap-6">
         <div className="flex min-h-24 min-w-24 items-start justify-start">{worshipDocument.header.leftLogoUrl ? <img src={worshipDocument.header.leftLogoUrl} alt="Left logo" className="h-24 w-24 object-contain" /> : null}</div>
         <div className="flex min-h-24 min-w-24 items-start justify-end">{worshipDocument.header.rightLogoUrl ? <img src={worshipDocument.header.rightLogoUrl} alt="Right logo" className="h-24 w-24 object-contain" /> : null}</div>
@@ -71,7 +188,7 @@ function HeaderSlide({ worshipDocument }: { worshipDocument: OrderOfWorshipDocum
           {worshipDocument.header.orderTitle ? <p className="mt-8 text-5xl font-bold uppercase tracking-[0.12em]">{worshipDocument.header.orderTitle}</p> : null}
           {worshipDocument.header.orderSubtitle ? <p className="mt-3 text-3xl text-white/88">{worshipDocument.header.orderSubtitle}</p> : null}
           {worshipDocument.header.sundayTheme ? <p className="mt-6 text-3xl font-medium whitespace-pre-wrap">{worshipDocument.header.sundayTheme}</p> : null}
-          {worshipDocument.header.serviceDateText ? <p className="mt-3 text-2xl text-white/78">{worshipDocument.header.serviceDateText}</p> : null}
+          {serviceDateText ? <p className="mt-3 text-2xl text-white/78">{serviceDateText}</p> : null}
           {worshipDocument.header.participantLines.length ? <div className="mt-10 space-y-2 text-xl text-white/78">{worshipDocument.header.participantLines.map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div> : null}
       </div>
     </div>
@@ -103,26 +220,28 @@ function ScriptureLine({ line }: { line: WorshipResponsiveLine }) {
   );
 }
 
-function SectionSlide({ section }: { section: WorshipSection }) {
+function SectionSlide({ section, continuationIndex, continuationCount }: { section: WorshipSection; continuationIndex: number; continuationCount: number }) {
   return (
-    <div className="mx-auto flex max-w-6xl flex-1 flex-col justify-center text-white">
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-1 flex-col justify-center overflow-hidden text-white">
       <div className="mt-4 flex items-center gap-4">
         {section.stand ? (
           <StandingCrossIcon className="h-14 w-14 shrink-0 md:h-16 md:w-16" />
         ) : null}
-        <h1 className="text-5xl font-semibold uppercase leading-tight md:text-7xl">{section.title}</h1>
+        <div>
+          <h1 className="text-5xl font-semibold uppercase leading-tight md:text-7xl">{section.title}</h1>
+          {continuationCount > 1 ? <p className="mt-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/55">Slide {continuationIndex + 1} of {continuationCount}</p> : null}
+        </div>
       </div>
       {section.note && section.type !== "TEXT" ? <p className="mt-4 text-xl italic text-white/72">{section.note}</p> : null}
-      <div className={section.stand ? "mt-10 rounded-[32px] border border-[#f6d28a]/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08))] p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10" : "mt-10 rounded-[32px] border border-white/12 bg-white/8 p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10"}>
+      <div className={section.stand ? "mt-8 flex-1 overflow-hidden rounded-[32px] border border-[#f6d28a]/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08))] p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10" : "mt-8 flex-1 overflow-hidden rounded-[32px] border border-white/12 bg-white/8 p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10"}>
         {section.type === "TEXT" ? (
           <div className="space-y-6">
-            {(section.note || section.body) ? (
-              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/12 pb-4">
-                <p className="text-2xl italic text-white/70">{section.note || " "}</p>
-                <p className="text-3xl font-semibold text-[#f0d6a4] md:text-4xl">{section.body}</p>
+            {section.note ? (
+              <div className="border-b border-white/12 pb-4">
+                <p className="text-2xl italic text-white/70">{section.note}</p>
               </div>
             ) : null}
-            <div className="hidden text-2xl leading-[1.8] text-white/92 md:text-3xl"><PresenterRichText text={section.body} /></div>
+            <div className="text-2xl leading-[1.8] text-white/92 md:text-3xl"><PresenterRichText text={section.body} /></div>
           </div>
         ) : null}
         {section.type === "RESPONSIVE" ? (
@@ -149,21 +268,37 @@ function SectionSlide({ section }: { section: WorshipSection }) {
   );
 }
 
-function SlideContent({ slide, worshipDocument }: { slide: Slide; worshipDocument: OrderOfWorshipDocument }) {
+function SlideContent({ slide, worshipDocument, serviceDateText }: { slide: Slide; worshipDocument: OrderOfWorshipDocument; serviceDateText?: string }) {
   if (slide.kind === "HEADER") {
-    return <HeaderSlide worshipDocument={worshipDocument} />;
+    return <HeaderSlide worshipDocument={worshipDocument} serviceDateText={serviceDateText} />;
   }
 
-  return <SectionSlide section={slide.section} />;
+  return <SectionSlide section={slide.section} continuationIndex={slide.continuationIndex} continuationCount={slide.continuationCount} />;
 }
 
-export function OrderOfWorshipPresenter({ document: worshipDocument, title, referenceDate }: { document: OrderOfWorshipDocument; title: string; referenceDate?: Date | string | null }) {
+export function OrderOfWorshipPresenter({ document: worshipDocument, title, referenceDate, serviceDate, serviceTime }: { document: OrderOfWorshipDocument; title: string; referenceDate?: Date | string | null; serviceDate?: Date | string | null; serviceTime?: string | null }) {
   const router = useRouter();
-  const slides = useMemo<Slide[]>(() => [{ id: "header", kind: "HEADER", title }, ...worshipDocument.sections.map((section) => ({ id: section.id, kind: "SECTION" as const, title: section.title, section }))], [worshipDocument, title]);
+  const slides = useMemo<Slide[]>(() => {
+    const sectionSlides = worshipDocument.sections.flatMap((section) => {
+      const pages = paginateSection(section);
+
+      return pages.map((page, index) => ({
+        id: `${section.id}-${index + 1}`,
+        kind: "SECTION" as const,
+        title: pages.length > 1 ? `${section.title} (${index + 1}/${pages.length})` : section.title,
+        section: page,
+        continuationIndex: index,
+        continuationCount: pages.length,
+      }));
+    });
+
+    return [{ id: "header", kind: "HEADER", title }, ...sectionSlides];
+  }, [worshipDocument, title]);
   const [index, setIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const theme = useMemo(() => getLiturgicalTheme(referenceDate), [referenceDate]);
+  const serviceDateText = useMemo(() => worshipDocument.header.serviceDateText || formatServiceDateText(serviceDate, serviceTime), [serviceDate, serviceTime, worshipDocument.header.serviceDateText]);
   const currentSlide = slides[index];
   const nextSlides = slides.slice(index + 1, index + 4);
   const currentDateTime = useMemo(() => formatManilaDateTime(now), [now]);
@@ -211,11 +346,11 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#09131f] text-white">
+    <div className="relative h-screen overflow-hidden bg-[#09131f] text-white">
       <LiturgicalAnimatedBackground theme={theme} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_38%),linear-gradient(180deg,rgba(6,10,18,0.28),rgba(6,10,18,0.62))]" />
 
-      <div className="relative z-10 flex min-h-screen flex-col px-6 py-5 md:px-10">
+      <div className="relative z-10 flex h-screen flex-col px-6 py-5 md:px-10">
         <div className="flex items-center justify-between text-white/70">
           <div>
             <div className="flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.22em]">
@@ -223,7 +358,7 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
               <span className="text-white/38">•</span>
               <span className="text-white/72">{currentDateTime.time}</span>
             </div>
-            <p className="mt-1 text-xs uppercase tracking-[0.22em]" style={{ color: theme.accentSoft }}>{theme.label}</p>
+            <p className="mt-1 text-xs font-bold uppercase tracking-[0.22em]" style={{ color: theme.accentSoft }}>{theme.label}</p>
           </div>
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => void toggleFullscreen()} className="inline-flex items-center gap-2 rounded-full border border-white/12 px-4 py-2 text-sm transition hover:bg-white/10">
@@ -236,8 +371,10 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
           </div>
         </div>
 
-        <div className="flex flex-1 items-center">
-          <SlideContent slide={currentSlide} worshipDocument={worshipDocument} />
+        <div className="flex min-h-0 flex-1 items-center justify-center py-4">
+          <div className="relative flex w-full max-h-full max-w-[calc((100vh-13rem)*16/9)] flex-col overflow-hidden rounded-[40px] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-8 py-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.92)] backdrop-blur-md md:px-12 md:py-10" style={{ aspectRatio: "16 / 9" }}>
+            <SlideContent slide={currentSlide} worshipDocument={worshipDocument} serviceDateText={serviceDateText} />
+          </div>
         </div>
 
         <div className="mt-8 rounded-[28px] border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))] px-4 py-3 shadow-[0_24px_60px_-42px_rgba(0,0,0,0.9)] backdrop-blur-xl">

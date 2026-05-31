@@ -16,5 +16,5 @@ export default async function DedicatedOrderOfWorshipPresentPage({ params }: { p
     notFound();
   }
 
-  return <OrderOfWorshipPresenter title={order.title} document={order.content} referenceDate={order.worshipDate ?? order.createdAt} />;
+  return <OrderOfWorshipPresenter title={order.title} document={order.content} referenceDate={order.worshipDate ?? order.createdAt} serviceDate={order.worshipDate} serviceTime={order.serviceTime} />;
 }

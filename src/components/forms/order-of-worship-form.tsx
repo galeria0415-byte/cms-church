@@ -38,6 +38,25 @@ function joinLines(value: string[]) {
   return value.join("\n");
 }
 
+function formatServiceDateText(worshipDate: string, serviceTime: string) {
+  const parts: string[] = [];
+
+  if (worshipDate) {
+    const date = new Date(`${worshipDate}T00:00:00`);
+    parts.push(new Intl.DateTimeFormat("en-PH", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(date));
+  }
+
+  if (serviceTime.trim()) {
+    parts.push(serviceTime.trim());
+  }
+
+  return parts.join(", ");
+}
+
 function SectionEditor({
   section,
   index,
@@ -218,6 +237,7 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
     status: initialData?.status ?? ContentStatus.DRAFT,
     content: initialData?.content ?? createDefaultOrderOfWorship(),
   });
+  const generatedServiceDateText = useMemo(() => formatServiceDateText(values.worshipDate, values.serviceTime), [values.worshipDate, values.serviceTime]);
 
   function updateSection(sectionId: string, nextSection: WorshipSection) {
     setValues((current) => ({
@@ -261,6 +281,13 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
       body: JSON.stringify({
         ...values,
         worshipDate: values.worshipDate || undefined,
+        content: {
+          ...values.content,
+          header: {
+            ...values.content.header,
+            serviceDateText: generatedServiceDateText,
+          },
+        },
       }),
     });
 
@@ -320,7 +347,7 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
                 <label className="space-y-2 text-sm font-medium text-[var(--ink)]"><span>Sunday theme</span><Input value={values.content.header.sundayTheme ?? ""} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, sundayTheme: event.target.value } } }))} /></label>
                 <label className="space-y-2 text-sm font-medium text-[var(--ink)]"><span>Main title</span><Input value={values.content.header.orderTitle ?? ""} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, orderTitle: event.target.value } } }))} /></label>
                 <label className="space-y-2 text-sm font-medium text-[var(--ink)]"><span>Subtitle</span><Input value={values.content.header.orderSubtitle ?? ""} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, orderSubtitle: event.target.value } } }))} /></label>
-                <label className="space-y-2 text-sm font-medium text-[var(--ink)] md:col-span-2"><span>Date and time text</span><Input value={values.content.header.serviceDateText ?? ""} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, serviceDateText: event.target.value } } }))} placeholder="17 May 2026, 9:00 a.m." /></label>
+                <label className="space-y-2 text-sm font-medium text-[var(--ink)] md:col-span-2"><span>Date and time text</span><Input value={generatedServiceDateText} readOnly placeholder="Generated from service date and service time" /></label>
               </div>
 
               <label className="block space-y-2 text-sm font-medium text-[var(--ink)]"><span>Participant lines</span><Textarea rows={4} value={joinLines(values.content.header.participantLines)} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, participantLines: splitLines(event.target.value) } } }))} placeholder="One line per row, e.g. Preacher: Rev. ___" /></label>
