@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Sparkles, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, PersonStanding, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -95,18 +95,28 @@ function ScriptureLine({ line }: { line: WorshipResponsiveLine }) {
 function SectionSlide({ section }: { section: WorshipSection }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-1 flex-col justify-center text-white">
-      <div className="flex items-center gap-4">
+      {!section.stand ? <p className="text-sm uppercase tracking-[0.35em] text-[#f0d6a4]">Order of Worship</p> : null}
+      <div className="mt-4 flex items-center gap-4">
         {section.stand ? (
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-[#f6d28a]/55 bg-[radial-gradient(circle_at_center,rgba(246,210,138,0.38),rgba(255,255,255,0.06)_72%)] text-[#ffe7b8] shadow-[0_0_28px_rgba(246,210,138,0.75)] backdrop-blur-md">
-            <Sparkles className="h-7 w-7" />
+          <div className="relative inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[#f6d28a]/55 bg-[radial-gradient(circle_at_center,rgba(246,210,138,0.42),rgba(255,255,255,0.08)_72%)] text-[#ffe7b8] shadow-[0_0_32px_rgba(246,210,138,0.82)] backdrop-blur-md before:absolute before:inset-0 before:animate-pulse before:rounded-full before:border before:border-[#f6d28a]/35 before:content-['']">
+            <PersonStanding className="relative h-8 w-8" />
           </div>
         ) : null}
-        {!section.stand ? <p className="text-sm uppercase tracking-[0.35em] text-[#f0d6a4]">Order of Worship</p> : null}
+        <h1 className="text-5xl font-semibold uppercase leading-tight md:text-7xl">{section.stand ? "* " : ""}{section.title}</h1>
       </div>
-      <h1 className="mt-4 text-5xl font-semibold uppercase leading-tight md:text-7xl">{section.stand ? "* " : ""}{section.title}</h1>
-      {section.note ? <p className="mt-4 text-xl italic text-white/72">{section.note}</p> : null}
+      {section.note && section.type !== "TEXT" ? <p className="mt-4 text-xl italic text-white/72">{section.note}</p> : null}
       <div className={section.stand ? "mt-10 rounded-[32px] border border-[#f6d28a]/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08))] p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10" : "mt-10 rounded-[32px] border border-white/12 bg-white/8 p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10"}>
-        {section.type === "TEXT" ? <div className="text-2xl leading-[1.8] text-white/92 md:text-3xl"><PresenterRichText text={section.body} /></div> : null}
+        {section.type === "TEXT" ? (
+          <div className="space-y-6">
+            {(section.note || section.body) ? (
+              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/12 pb-4">
+                <p className="text-2xl italic text-white/70">{section.note || " "}</p>
+                <p className="text-3xl font-semibold text-[#f0d6a4] md:text-4xl">{section.body}</p>
+              </div>
+            ) : null}
+            <div className="hidden text-2xl leading-[1.8] text-white/92 md:text-3xl"><PresenterRichText text={section.body} /></div>
+          </div>
+        ) : null}
         {section.type === "RESPONSIVE" ? (
           isScriptureReadingSection(section) ? (
             <div className="space-y-5">{section.lines.map((line) => <ScriptureLine key={line.id} line={line} />)}</div>
