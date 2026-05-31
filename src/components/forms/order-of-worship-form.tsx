@@ -38,23 +38,29 @@ function joinLines(value: string[]) {
   return value.join("\n");
 }
 
-function formatServiceDateText(worshipDate: string, serviceTime: string) {
-  const parts: string[] = [];
+function buildServiceDateText(worshipDate: string, serviceTime: string, fallback = "") {
+  const [yearText, monthText, dayText] = worshipDate.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
 
-  if (worshipDate) {
-    const date = new Date(`${worshipDate}T00:00:00`);
-    parts.push(new Intl.DateTimeFormat("en-PH", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(date));
+  const formattedDate = Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
+    ? `${day} ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][month - 1] ?? ""} ${year}`.trim()
+    : "";
+
+  if (formattedDate && serviceTime.trim()) {
+    return `${formattedDate}, ${serviceTime.trim()}`;
+  }
+
+  if (formattedDate) {
+    return formattedDate;
   }
 
   if (serviceTime.trim()) {
-    parts.push(serviceTime.trim());
+    return serviceTime.trim();
   }
 
-  return parts.join(", ");
+  return fallback;
 }
 
 function SectionEditor({
@@ -237,7 +243,10 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
     status: initialData?.status ?? ContentStatus.DRAFT,
     content: initialData?.content ?? createDefaultOrderOfWorship(),
   });
-  const generatedServiceDateText = useMemo(() => formatServiceDateText(values.worshipDate, values.serviceTime), [values.worshipDate, values.serviceTime]);
+  const resolvedServiceDateText = useMemo(
+    () => buildServiceDateText(values.worshipDate, values.serviceTime, values.content.header.serviceDateText ?? ""),
+    [values.content.header.serviceDateText, values.serviceTime, values.worshipDate],
+  );
 
   function updateSection(sectionId: string, nextSection: WorshipSection) {
     setValues((current) => ({
@@ -285,7 +294,7 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
           ...values.content,
           header: {
             ...values.content.header,
-            serviceDateText: generatedServiceDateText,
+            serviceDateText: resolvedServiceDateText,
           },
         },
       }),
@@ -347,7 +356,7 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
                 <label className="space-y-2 text-sm font-medium text-[var(--ink)]"><span>Sunday theme</span><Input value={values.content.header.sundayTheme ?? ""} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, sundayTheme: event.target.value } } }))} /></label>
                 <label className="space-y-2 text-sm font-medium text-[var(--ink)]"><span>Main title</span><Input value={values.content.header.orderTitle ?? ""} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, orderTitle: event.target.value } } }))} /></label>
                 <label className="space-y-2 text-sm font-medium text-[var(--ink)]"><span>Subtitle</span><Input value={values.content.header.orderSubtitle ?? ""} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, orderSubtitle: event.target.value } } }))} /></label>
-                <label className="space-y-2 text-sm font-medium text-[var(--ink)] md:col-span-2"><span>Date and time text</span><Input value={generatedServiceDateText} readOnly placeholder="Generated from service date and service time" /></label>
+                <label className="space-y-2 text-sm font-medium text-[var(--ink)] md:col-span-2"><span>Date and time text</span><Input value={resolvedServiceDateText} readOnly placeholder="17 May 2026, 9:00 a.m." /></label>
               </div>
 
               <label className="block space-y-2 text-sm font-medium text-[var(--ink)]"><span>Participant lines</span><Textarea rows={4} value={joinLines(values.content.header.participantLines)} onChange={(event) => setValues((current) => ({ ...current, content: { ...current.content, header: { ...current.content.header, participantLines: splitLines(event.target.value) } } }))} placeholder="One line per row, e.g. Preacher: Rev. ___" /></label>
