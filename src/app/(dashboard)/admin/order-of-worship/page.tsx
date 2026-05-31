@@ -44,7 +44,7 @@ export default async function OrderOfWorshipPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Link href={`/admin/order-of-worship/${order.id}`} className="rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Preview</Link>
-                  <Link href={`/admin/order-of-worship/${order.id}/present`} className="rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Present</Link>
+                  <Link href={`/present/order-of-worship/${order.id}`} className="rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Present</Link>
                   <Link href={`/print/order-of-worship/${order.id}`} className="rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Print</Link>
                   <Link href={`/admin/order-of-worship/${order.id}/edit`} className="rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Edit</Link>
                   <DeleteButton apiPath={`/api/order-of-worship/${order.id}`} label="Delete" confirmMessage={`Delete order of worship \"${order.title}\"? This cannot be undone.`} />

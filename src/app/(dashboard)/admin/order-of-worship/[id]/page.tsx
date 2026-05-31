@@ -32,7 +32,7 @@ export default async function OrderOfWorshipPreviewPage({ params }: { params: Pa
         </div>
         <div className="flex flex-wrap gap-3">
           <ActionLink href={`/admin/order-of-worship/${order.id}/edit`}>Edit</ActionLink>
-          <ActionLink href={`/admin/order-of-worship/${order.id}/present`}>Present</ActionLink>
+          <ActionLink href={`/present/order-of-worship/${order.id}`}>Present</ActionLink>
           <ActionLink href={`/print/order-of-worship/${order.id}`}>Print</ActionLink>
         </div>
       </div>
