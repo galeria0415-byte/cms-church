@@ -106,8 +106,8 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
       title: "Call to Worship",
       stand: true,
       lines: [
-        { id: createWorshipId("line"), speaker: "LITURGIST", text: "Add the opening line here." },
-        { id: createWorshipId("line"), speaker: "CHURCH", text: "Add the congregational response here." },
+        { id: createWorshipId("line"), speaker: "LITURGIST", text: "" },
+        { id: createWorshipId("line"), speaker: "CHURCH", text: "" },
       ],
     };
   }
@@ -118,10 +118,10 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
       type,
       title: "Opening Hymn",
       stand: true,
-      hymnSource: "HFJ No. ___",
-      songTitle: "Song title",
+      hymnSource: "",
+      songTitle: "",
       parts: [
-        { id: createWorshipId("part"), label: "Stanza 1", text: "Enter lyrics here." },
+        { id: createWorshipId("part"), label: "Stanza 1", text: "" },
       ],
     };
   }
@@ -132,7 +132,7 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
       type,
       title: "Our Joys and Concerns",
       stand: false,
-      items: [{ id: createWorshipId("item"), title: "Prayer item", text: "Enter the item text here." }],
+      items: [{ id: createWorshipId("item"), title: "", text: "" }],
     };
   }
 
@@ -141,7 +141,52 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
     type: "TEXT",
     title: "Prelude / Silent Meditation",
     stand: false,
-    body: "Enter the content for this section.",
+    body: "",
+  };
+}
+
+function createTextSection(title: string, stand = false): WorshipTextSection {
+  return {
+    id: createWorshipId("section"),
+    type: "TEXT",
+    title,
+    stand,
+    body: "",
+  };
+}
+
+function createResponsiveSection(title: string, stand = false): WorshipResponsiveSection {
+  return {
+    id: createWorshipId("section"),
+    type: "RESPONSIVE",
+    title,
+    stand,
+    lines: [
+      { id: createWorshipId("line"), speaker: "LITURGIST", text: "" },
+      { id: createWorshipId("line"), speaker: "CHURCH", text: "" },
+    ],
+  };
+}
+
+function createHymnSection(title: string, stand = false): WorshipHymnSection {
+  return {
+    id: createWorshipId("section"),
+    type: "HYMN",
+    title,
+    stand,
+    hymnSource: "",
+    songTitle: "",
+    parts: [{ id: createWorshipId("part"), label: "Stanza 1", text: "" }],
+  };
+}
+
+function createListSection(title: string, stand = false): WorshipListSection {
+  return {
+    id: createWorshipId("section"),
+    type: "LIST",
+    title,
+    stand,
+    items: [{ id: createWorshipId("item"), title: "", text: "" }],
   };
 }
 
@@ -150,38 +195,39 @@ export function createDefaultOrderOfWorship(): OrderOfWorshipDocument {
     header: {
       leftLogoUrl: "",
       rightLogoUrl: "",
-      centerLines: [
-        "UNITED CHURCH OF CHRIST IN THE PHILIPPINES",
-        "Jurisdiction / Conference",
-        "Local Church Name",
-      ],
-      monthTheme: "Month Theme: Life in Christ",
+      centerLines: [""],
+      monthTheme: "",
       orderTitle: "ORDER OF WORSHIP",
-      orderSubtitle: "Sunday Service",
-      sundayTheme: "Theme this Sunday: \"Life in Community\"",
-      serviceDateText: "17 May 2026, 9:00 a.m.",
-      participantLines: [
-        "Preacher: Rev. __________",
-        "Liturgist: __________",
-        "Church at Prayer: __________",
-      ],
+      orderSubtitle: "",
+      sundayTheme: "",
+      serviceDateText: "",
+      participantLines: [],
     },
     sections: [
-      { id: createWorshipId("section"), type: "TEXT", title: "Ringing of the Church Bell", stand: false, body: "(At the sound of the bell, please be silent.)" },
-      { id: createWorshipId("section"), type: "TEXT", title: "Prelude / Silent Meditation", stand: false, body: "Instrumental preparation or silent meditation." },
-      { id: createWorshipId("section"), type: "TEXT", title: "Introit", stand: true, body: "Opening choral or congregational call into worship." },
-      { id: createWorshipId("section"), type: "HYMN", title: "Opening Hymn", stand: true, hymnSource: "HFJ No. ___", songTitle: "The Church's One Foundation", parts: [{ id: createWorshipId("part"), label: "Stanza 1", text: "Enter stanza text here." }] },
-      { id: createWorshipId("section"), type: "TEXT", title: "Lighting of the Altar Candles", stand: true, body: "Lighting of the altar candles." },
-      { id: createWorshipId("section"), type: "RESPONSIVE", title: "Call to Worship", stand: true, lines: [{ id: createWorshipId("line"), speaker: "LITURGIST", text: "The foundation of our faith community is the unity of the Three in One." }, { id: createWorshipId("line"), speaker: "CHURCH", text: "Make us one, Lord, just as You are one." }] },
-      { id: createWorshipId("section"), type: "TEXT", title: "Prayer of Approach", stand: false, body: "Holy God, we come today..." },
-      { id: createWorshipId("section"), type: "HYMN", title: "Song of Response", stand: false, hymnSource: "HFJ No. ___", songTitle: "Glory to the Creator", parts: [{ id: createWorshipId("part"), label: "Response", text: "Enter the response lyrics here." }] },
-      { id: createWorshipId("section"), type: "TEXT", title: "Call to Confession", stand: false, body: "Call to confession text." },
-      { id: createWorshipId("section"), type: "TEXT", title: "Prayer of Confession", stand: false, body: "Prayer of confession text." },
-      { id: createWorshipId("section"), type: "RESPONSIVE", title: "Assurance of Pardon", stand: false, lines: [{ id: createWorshipId("line"), speaker: "PREACHER", text: "Scriptural assurance text." }, { id: createWorshipId("line"), speaker: "CHURCH", text: "Thank You, Lord, for Your forgiveness!" }] },
-      { id: createWorshipId("section"), type: "HYMN", title: "Song Response", stand: false, hymnSource: "HFJ No. ___", songTitle: "Hear Our Prayer", parts: [{ id: createWorshipId("part"), label: "Response", text: "Enter the song response here." }] },
-      { id: createWorshipId("section"), type: "LIST", title: "Our Joys and Concerns", stand: false, items: [{ id: createWorshipId("item"), title: "Joy", text: "Add a thanksgiving item." }, { id: createWorshipId("item"), title: "Concern", text: "Add a prayer concern." }] },
-      { id: createWorshipId("section"), type: "HYMN", title: "Fellowship Song", stand: false, hymnSource: "HFJ No. ___", songTitle: "Halle, Halle, Hallelujah!", parts: [{ id: createWorshipId("part"), label: "Song", text: "Enter fellowship song lyrics here." }] },
-      { id: createWorshipId("section"), type: "TEXT", title: "Church at Prayer", stand: false, body: "Prayer text or prayer lead instructions." },
+      createTextSection("Ringing of the Church Bell"),
+      createTextSection("Prelude/ Silent Meditation"),
+      createTextSection("Introit", true),
+      createHymnSection("Opening Hymn", true),
+      createTextSection("Lighting of the Altar Candles", true),
+      createResponsiveSection("Call to Worship", true),
+      createTextSection("Prayer of Approach"),
+      createHymnSection("Song Response"),
+      createTextSection("Call to Confession"),
+      createTextSection("Prayer of Confession"),
+      createResponsiveSection("Assurance of Pardon"),
+      createHymnSection("Song Response", true),
+      createListSection("Our Joys and Concerns"),
+      createHymnSection("Fellowship Song", true),
+      createTextSection("Church at Prayer"),
+      createHymnSection("Song Response"),
+      createListSection("Scripture Reading"),
+      createTextSection("Anthem"),
+      createTextSection("Message"),
+      createTextSection("Call to Offertory"),
+      createTextSection("Prayer of Dedication", true),
+      createHymnSection("Closing Hymn", true),
+      createTextSection("Closing Prayer and Benediction", true),
+      createTextSection("Extroit", true),
     ],
   };
 }
