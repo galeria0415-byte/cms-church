@@ -36,6 +36,7 @@ function formatManilaDateTime(value: Date) {
 
 function PresenterRichText({ text, scripture = false }: { text: string; scripture?: boolean }) {
   const lines = text.split("\n");
+  const justifyStyle = { textAlign: "justify" as const, textJustify: "inter-word" as const };
 
   return (
     <div className="space-y-3">
@@ -44,14 +45,14 @@ function PresenterRichText({ text, scripture = false }: { text: string; scriptur
 
         if (scripture && match) {
           return (
-            <p key={`${line}-${index}`} className="flex items-start gap-3 text-justify leading-[1.75] text-inherit">
+            <p key={`${line}-${index}`} className="flex items-start gap-3 leading-[1.75] text-inherit">
               <span className="mt-1 inline-flex min-w-9 items-center justify-center rounded-full bg-[#f0d6a4] px-2 py-0.5 text-sm font-bold text-slate-900">{match[1]}</span>
-              <span>{match[2]}</span>
+              <span className="block flex-1" style={justifyStyle}>{match[2]}</span>
             </p>
           );
         }
 
-        return <p key={`${line}-${index}`} className="whitespace-pre-wrap text-justify text-inherit">{line || "\u00A0"}</p>;
+        return <p key={`${line}-${index}`} className="whitespace-pre-wrap text-inherit" style={justifyStyle}>{line || "\u00A0"}</p>;
       })}
     </div>
   );
