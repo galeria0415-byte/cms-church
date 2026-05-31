@@ -13,19 +13,19 @@ const responsiveLineSchema = z.object({
   id: z.string().min(1),
   speaker: z.enum(WORSHIP_SPEAKERS),
   customSpeaker: optionalString,
-  text: z.string().trim().min(1),
+  text: z.string().trim(),
 });
 
 const hymnPartSchema = z.object({
   id: z.string().min(1),
-  label: z.string().trim().min(1),
-  text: z.string().trim().min(1),
+  label: z.string().trim(),
+  text: z.string().trim(),
 });
 
 const listItemSchema = z.object({
   id: z.string().min(1),
   title: optionalString,
-  text: z.string().trim().min(1),
+  text: z.string().trim(),
 });
 
 const sectionBaseSchema = z.object({
@@ -38,7 +38,7 @@ const sectionBaseSchema = z.object({
 
 const textSectionSchema = sectionBaseSchema.extend({
   type: z.literal("TEXT"),
-  body: z.string().trim().min(1),
+  body: z.string().trim(),
 });
 
 const responsiveSectionSchema = sectionBaseSchema.extend({
@@ -62,7 +62,7 @@ export const worshipDocumentSchema = z.object({
   header: z.object({
     leftLogoUrl: optionalString,
     rightLogoUrl: optionalString,
-    centerLines: z.array(z.string().trim()).min(1),
+    centerLines: z.array(z.string().trim()),
     monthTheme: optionalString,
     orderTitle: optionalString,
     orderSubtitle: optionalString,

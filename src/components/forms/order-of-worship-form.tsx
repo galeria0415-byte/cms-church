@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { OrderOfWorshipDocument, WorshipHymnPart, WorshipListItem, WorshipResponsiveLine, WorshipSection, WorshipSectionType } from "@/lib/order-of-worship";
-import { createDefaultOrderOfWorship, createSectionTemplate, createWorshipId, WORSHIP_SPEAKERS } from "@/lib/order-of-worship";
+import { convertSectionType, createDefaultOrderOfWorship, createSectionTemplate, createWorshipId, WORSHIP_SPEAKERS } from "@/lib/order-of-worship";
 import { formatDateInput, toSlug } from "@/lib/utils";
 
 type FormValues = {
@@ -118,6 +118,16 @@ function SectionEditor({
           <Input value={section.note ?? ""} onChange={(event) => onChange({ ...section, note: event.target.value })} placeholder="Optional note or reader cue" />
         </label>
       </div>
+
+      <label className="mt-4 block space-y-2 text-sm font-medium text-[var(--ink)]">
+        <span>Section type</span>
+        <Select value={section.type} onChange={(event) => onChange(convertSectionType(section, event.target.value as WorshipSectionType))}>
+          <option value="TEXT">TEXT</option>
+          <option value="RESPONSIVE">RESPONSIVE</option>
+          <option value="HYMN">HYMN</option>
+          <option value="LIST">LIST</option>
+        </Select>
+      </label>
 
       <label className="mt-4 flex items-center gap-3 text-sm font-medium text-[var(--ink)]">
         <input type="checkbox" checked={section.stand} onChange={(event) => onChange({ ...section, stand: event.target.checked })} />
