@@ -38,10 +38,12 @@ function PresenterRichText({ text, scripture = false }: { text: string; scriptur
 
 function HeaderSlide({ worshipDocument }: { worshipDocument: OrderOfWorshipDocument }) {
   return (
-    <div className="mx-auto max-w-5xl text-center text-white">
-      <div className="grid items-center gap-6 md:grid-cols-[120px_minmax(0,1fr)_120px]">
-        <div className="flex justify-center md:justify-start">{worshipDocument.header.leftLogoUrl ? <img src={worshipDocument.header.leftLogoUrl} alt="Left logo" className="h-24 w-24 object-contain" /> : null}</div>
-        <div>
+    <div className="mx-auto flex max-w-6xl flex-1 flex-col text-center text-white">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex min-h-24 min-w-24 items-start justify-start">{worshipDocument.header.leftLogoUrl ? <img src={worshipDocument.header.leftLogoUrl} alt="Left logo" className="h-24 w-24 object-contain" /> : null}</div>
+        <div className="flex min-h-24 min-w-24 items-start justify-end">{worshipDocument.header.rightLogoUrl ? <img src={worshipDocument.header.rightLogoUrl} alt="Right logo" className="h-24 w-24 object-contain" /> : null}</div>
+      </div>
+      <div className="mt-6">
           {worshipDocument.header.centerLines.map((line, index) => <p key={`${line}-${index}`} className={index === 2 ? "mt-2 text-4xl font-semibold" : index === 0 ? "text-2xl font-semibold uppercase tracking-[0.12em] text-white/90" : "mt-2 text-xl uppercase tracking-[0.18em] text-white/75"}>{line}</p>)}
           {worshipDocument.header.monthTheme ? <p className="mt-8 text-2xl font-semibold text-[#f0d6a4]">{worshipDocument.header.monthTheme}</p> : null}
           {worshipDocument.header.orderTitle ? <p className="mt-8 text-5xl font-bold uppercase tracking-[0.12em]">{worshipDocument.header.orderTitle}</p> : null}
@@ -49,8 +51,6 @@ function HeaderSlide({ worshipDocument }: { worshipDocument: OrderOfWorshipDocum
           {worshipDocument.header.sundayTheme ? <p className="mt-6 text-3xl font-medium whitespace-pre-wrap">{worshipDocument.header.sundayTheme}</p> : null}
           {worshipDocument.header.serviceDateText ? <p className="mt-3 text-2xl text-white/78">{worshipDocument.header.serviceDateText}</p> : null}
           {worshipDocument.header.participantLines.length ? <div className="mt-10 space-y-2 text-xl text-white/78">{worshipDocument.header.participantLines.map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div> : null}
-        </div>
-        <div className="flex justify-center md:justify-end">{worshipDocument.header.rightLogoUrl ? <img src={worshipDocument.header.rightLogoUrl} alt="Right logo" className="h-24 w-24 object-contain" /> : null}</div>
       </div>
     </div>
   );

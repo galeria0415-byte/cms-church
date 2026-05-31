@@ -132,7 +132,7 @@ export function OrderOfWorshipDocumentView({
 }) {
   return (
     <div className={cn("overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_35px_90px_-55px_rgba(15,23,42,0.45)]", className)}>
-      <div className={cn("relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(236,221,196,0.55),_rgba(255,255,255,0.96)_58%)] px-6 py-10 sm:px-10", printCompact && "px-5 py-6")}>
+      <div className={cn("relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(236,221,196,0.55),_rgba(255,255,255,0.96)_58%)] px-6 py-10 sm:px-10", printCompact && "border-b-0 bg-white px-4 py-4")}>
         <div className="grid gap-6 md:grid-cols-[120px_minmax(0,1fr)_120px] md:items-start">
           <div className="flex justify-center md:justify-start">
             {document.header.leftLogoUrl ? <img src={document.header.leftLogoUrl} alt="Left logo" className="h-20 w-20 object-contain" /> : <div className="h-20 w-20 rounded-full border border-dashed border-slate-300" />} 
@@ -141,14 +141,14 @@ export function OrderOfWorshipDocumentView({
             {document.header.centerLines.map((line, index) => (
               <p key={`${line}-${index}`} className={cn("text-slate-800", index === 0 ? "text-lg font-semibold uppercase tracking-[0.08em]" : index === 2 ? "mt-1 text-xl font-bold" : "mt-1 text-sm font-medium uppercase tracking-[0.12em]")}>{line}</p>
             ))}
-            {document.header.monthTheme ? <p className="mt-5 text-lg font-semibold text-slate-700">{document.header.monthTheme}</p> : null}
-            {document.header.orderTitle ? <p className="mt-6 text-2xl font-bold uppercase tracking-[0.08em] text-slate-900">{document.header.orderTitle}</p> : null}
-            {document.header.orderSubtitle ? <p className="mt-1 text-lg font-semibold text-slate-700">{document.header.orderSubtitle}</p> : null}
-            {document.header.sundayTheme ? <p className="mt-4 text-lg font-semibold text-slate-800">{document.header.sundayTheme}</p> : null}
-            {document.header.serviceDateText ? <p className="mt-1 text-base text-slate-600">{document.header.serviceDateText}</p> : null}
-            {title ? <p className="mt-6 text-sm uppercase tracking-[0.24em] text-slate-500">{title}</p> : null}
+            {document.header.monthTheme ? <p className={cn("mt-5 text-lg font-semibold text-slate-700", printCompact && "mt-3 text-sm")}>{document.header.monthTheme}</p> : null}
+            {document.header.orderTitle ? <p className={cn("mt-6 text-2xl font-bold uppercase tracking-[0.08em] text-slate-900", printCompact && "mt-3 text-xl")}>{document.header.orderTitle}</p> : null}
+            {document.header.orderSubtitle ? <p className={cn("mt-1 text-lg font-semibold text-slate-700", printCompact && "text-base")}>{document.header.orderSubtitle}</p> : null}
+            {document.header.sundayTheme ? <p className={cn("mt-4 text-lg font-semibold text-slate-800", printCompact && "mt-2 text-base whitespace-pre-wrap")}>{document.header.sundayTheme}</p> : null}
+            {document.header.serviceDateText ? <p className={cn("mt-1 text-base text-slate-600", printCompact && "text-sm")}>{document.header.serviceDateText}</p> : null}
+            {title && !printCompact ? <p className="mt-6 text-sm uppercase tracking-[0.24em] text-slate-500">{title}</p> : null}
             {document.header.participantLines.length ? (
-              <div className="mt-6 space-y-1 text-base text-slate-700">
+              <div className={cn("mt-6 space-y-1 text-base text-slate-700", printCompact && "mt-3 text-sm leading-5")}>
                 {document.header.participantLines.map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}
               </div>
             ) : null}
@@ -159,17 +159,17 @@ export function OrderOfWorshipDocumentView({
         </div>
       </div>
 
-      <div className={cn("space-y-8 px-6 py-8 sm:px-10 sm:py-10", printCompact && "columns-2 gap-6 space-y-0 px-5 py-6")}>
+      <div className={cn("space-y-8 px-6 py-8 sm:px-10 sm:py-10", printCompact && "columns-2 gap-6 space-y-0 px-4 py-2 text-[13px] leading-5")}>
         {document.sections.map((section, index) => (
-          <section key={section.id} className={cn("rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(248,245,240,0.9))] p-5 sm:p-6", printCompact && "mb-5 break-inside-avoid-column rounded-[20px] p-4")}>
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
+          <section key={section.id} className={cn("rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(248,245,240,0.9))] p-5 sm:p-6", printCompact && "mb-4 break-inside-avoid-column rounded-none border-0 bg-transparent p-0 shadow-none")}>
+            <div className={cn("flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4", printCompact && "border-b-0 pb-1")}>
               <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Section {renderSectionNumber(index)}</p>
-                <h2 className="text-xl font-semibold uppercase text-slate-900">{section.stand ? "* " : ""}{section.title}</h2>
+                {!printCompact ? <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Section {renderSectionNumber(index)}</p> : null}
+                <h2 className={cn("text-xl font-semibold uppercase text-slate-900", printCompact && "text-[15px] leading-5")}>{section.stand ? "* " : ""}{section.title}</h2>
               </div>
-              {section.note ? <p className="max-w-sm text-right text-sm italic text-slate-500">{section.note}</p> : null}
+              {section.note ? <p className={cn("max-w-sm text-right text-sm italic text-slate-500", printCompact && "max-w-none text-left text-[11px]")}>{section.note}</p> : null}
             </div>
-            <div className="mt-5">
+            <div className={cn("mt-5", printCompact && "mt-1")}>
               <SectionBody section={section} />
             </div>
           </section>

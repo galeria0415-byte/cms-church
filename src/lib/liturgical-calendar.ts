@@ -17,9 +17,22 @@ export type LiturgicalTheme = {
   gradient: string[];
 };
 
+const MANILA_TIME_ZONE = "Asia/Manila";
+
 function normalizeDate(value?: Date | string | null) {
   const date = value ? new Date(value) : new Date();
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: MANILA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(date);
+  const year = Number(parts.find((part) => part.type === "year")?.value ?? date.getFullYear());
+  const month = Number(parts.find((part) => part.type === "month")?.value ?? date.getMonth() + 1);
+  const day = Number(parts.find((part) => part.type === "day")?.value ?? date.getDate());
+
+  return new Date(year, month - 1, day);
 }
 
 function addDays(date: Date, days: number) {
@@ -151,7 +164,7 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
   if (date > pentecost || date < advent) {
     return {
       season: "ORDINARY_TIME",
-      label: "Ordinary Time",
+      label: "Ordinary Time (Green Season)",
       accent: "#3f8c4f",
       accentSoft: "#caefc5",
       glow: "rgba(202,239,197,0.28)",
@@ -161,7 +174,7 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
 
   return {
     season: "ORDINARY_TIME",
-    label: "Ordinary Time",
+    label: "Ordinary Time (Green Season)",
     accent: "#3f8c4f",
     accentSoft: "#caefc5",
     glow: "rgba(202,239,197,0.28)",
