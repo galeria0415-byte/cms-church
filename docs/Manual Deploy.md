@@ -18,6 +18,7 @@ Delete scripts
 Delete app.js
 Delete server.js
 Delete package.json
+
 Delete everything in public except public/uploads
 Delete src, prisma, docs, .git, old deploy zips, old extractor files if they are still there
 Keep these:

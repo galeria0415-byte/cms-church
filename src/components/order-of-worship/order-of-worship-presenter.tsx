@@ -13,6 +13,27 @@ type Slide =
   | { id: string; kind: "HEADER"; title: string }
   | { id: string; kind: "SECTION"; title: string; section: WorshipSection };
 
+const MANILA_TIME_ZONE = "Asia/Manila";
+
+function formatManilaDateTime(value: Date) {
+  const date = new Intl.DateTimeFormat("en-PH", {
+    timeZone: MANILA_TIME_ZONE,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(value);
+  const time = new Intl.DateTimeFormat("en-PH", {
+    timeZone: MANILA_TIME_ZONE,
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }).format(value);
+
+  return { date, time: `${time} GMT+8` };
+}
+
 function PresenterRichText({ text, scripture = false }: { text: string; scripture?: boolean }) {
   const lines = text.split("\n");
 
@@ -74,10 +95,17 @@ function ScriptureLine({ line }: { line: WorshipResponsiveLine }) {
 function SectionSlide({ section }: { section: WorshipSection }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-1 flex-col justify-center text-white">
-      <p className="text-sm uppercase tracking-[0.35em] text-[#f0d6a4]">{section.stand ? "Congregation stands" : "Order of Worship"}</p>
+      {section.stand ? (
+        <div className="inline-flex w-fit items-center gap-3 rounded-full border border-[#f6d28a]/45 bg-[linear-gradient(135deg,rgba(246,210,138,0.24),rgba(255,255,255,0.08))] px-5 py-2 text-[#ffe7b8] shadow-[0_18px_40px_-28px_rgba(246,210,138,0.9)] backdrop-blur-md">
+          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#f6d28a] shadow-[0_0_18px_rgba(246,210,138,0.9)]" />
+          <span className="text-sm font-semibold uppercase tracking-[0.32em]">Please stand, congregation</span>
+        </div>
+      ) : (
+        <p className="text-sm uppercase tracking-[0.35em] text-[#f0d6a4]">Order of Worship</p>
+      )}
       <h1 className="mt-4 text-5xl font-semibold uppercase leading-tight md:text-7xl">{section.stand ? "* " : ""}{section.title}</h1>
       {section.note ? <p className="mt-4 text-xl italic text-white/72">{section.note}</p> : null}
-      <div className="mt-10 rounded-[32px] border border-white/12 bg-white/8 p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10">
+      <div className={section.stand ? "mt-10 rounded-[32px] border border-[#f6d28a]/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08))] p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10" : "mt-10 rounded-[32px] border border-white/12 bg-white/8 p-8 shadow-[0_40px_120px_-70px_rgba(0,0,0,0.85)] backdrop-blur-md md:p-10"}>
         {section.type === "TEXT" ? <div className="text-2xl leading-[1.8] text-white/92 md:text-3xl"><PresenterRichText text={section.body} /></div> : null}
         {section.type === "RESPONSIVE" ? (
           isScriptureReadingSection(section) ? (
@@ -116,9 +144,11 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
   const slides = useMemo<Slide[]>(() => [{ id: "header", kind: "HEADER", title }, ...worshipDocument.sections.map((section) => ({ id: section.id, kind: "SECTION" as const, title: section.title, section }))], [worshipDocument, title]);
   const [index, setIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [now, setNow] = useState(() => new Date());
   const theme = useMemo(() => getLiturgicalTheme(referenceDate), [referenceDate]);
   const currentSlide = slides[index];
   const nextSlides = slides.slice(index + 1, index + 4);
+  const currentDateTime = useMemo(() => formatManilaDateTime(now), [now]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -148,6 +178,11 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   async function toggleFullscreen() {
     if (!document.fullscreenElement) {
       await document.documentElement.requestFullscreen();
@@ -165,8 +200,12 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
       <div className="relative z-10 flex min-h-screen flex-col px-6 py-5 md:px-10">
         <div className="flex items-center justify-between text-white/70">
           <div>
-            <p className="text-sm uppercase tracking-[0.28em]">Order of Worship Presenter</p>
-            <p className="mt-1 text-xs uppercase tracking-[0.22em]" style={{ color: theme.accentSoft }}>{theme.label}</p>
+            <p className="text-sm uppercase tracking-[0.28em]">{currentDateTime.date}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em]">
+              <span style={{ color: theme.accentSoft }}>{theme.label}</span>
+              <span className="text-white/38">•</span>
+              <span className="text-white/72">{currentDateTime.time}</span>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => void toggleFullscreen()} className="inline-flex items-center gap-2 rounded-full border border-white/12 px-4 py-2 text-sm transition hover:bg-white/10">
@@ -183,7 +222,7 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
           <SlideContent slide={currentSlide} worshipDocument={worshipDocument} />
         </div>
 
-        <div className="mt-8 rounded-[28px] border border-white/12 bg-black/18 px-4 py-3 backdrop-blur-md">
+        <div className="mt-8 rounded-[28px] border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))] px-4 py-3 shadow-[0_24px_60px_-42px_rgba(0,0,0,0.9)] backdrop-blur-xl">
           <div className="flex flex-wrap items-center gap-3 md:gap-4">
             <div className="flex items-center gap-3">
               <button type="button" onClick={() => setIndex((current) => Math.max(0, current - 1))} disabled={index === 0} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/8 transition hover:bg-white/14 disabled:opacity-40">
@@ -194,21 +233,21 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
               </button>
             </div>
 
-            <div className="min-w-[180px] rounded-2xl border border-white/10 bg-white/6 px-3 py-2">
+            <div className="min-w-[180px] rounded-full border border-white/12 bg-white/8 px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <p className="text-[10px] uppercase tracking-[0.22em] text-[#f0d6a4]">Now</p>
               <p className="mt-1 truncate text-sm font-semibold uppercase text-white">{currentSlide.kind === "HEADER" ? "Header" : currentSlide.title}</p>
             </div>
 
-            <div className="flex min-w-[260px] flex-1 items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex min-w-[260px] flex-1 items-center gap-2 overflow-x-auto rounded-full border border-white/10 bg-white/6 px-3 py-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <span className="shrink-0 text-[10px] uppercase tracking-[0.22em] text-white/55">Up next</span>
               {nextSlides.length ? nextSlides.map((slide, slideIndex) => (
-                <button key={slide.id} type="button" onClick={() => setIndex(index + slideIndex + 1)} className="shrink-0 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] text-white/78 transition hover:bg-white/12">
+                <button key={slide.id} type="button" onClick={() => setIndex(index + slideIndex + 1)} className="shrink-0 rounded-full border border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))] px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] text-white/78 transition hover:bg-white/12">
                   {slide.kind === "HEADER" ? "Header" : slide.title}
                 </button>
               )) : <span className="text-xs text-white/40">No more sections</span>}
             </div>
 
-            <div className="ml-auto rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs uppercase tracking-[0.16em] text-white/55">
+            <div className="ml-auto rounded-full border border-white/12 bg-white/8 px-4 py-2 text-xs uppercase tracking-[0.16em] text-white/55">
               Slide {index + 1} / {slides.length}
             </div>
           </div>
