@@ -44,14 +44,14 @@ function PresenterRichText({ text, scripture = false }: { text: string; scriptur
 
         if (scripture && match) {
           return (
-            <p key={`${line}-${index}`} className="flex items-start gap-3 leading-[1.75] text-inherit">
+            <p key={`${line}-${index}`} className="flex items-start gap-3 text-justify leading-[1.75] text-inherit">
               <span className="mt-1 inline-flex min-w-9 items-center justify-center rounded-full bg-[#f0d6a4] px-2 py-0.5 text-sm font-bold text-slate-900">{match[1]}</span>
               <span>{match[2]}</span>
             </p>
           );
         }
 
-        return <p key={`${line}-${index}`} className="whitespace-pre-wrap text-inherit">{line || "\u00A0"}</p>;
+        return <p key={`${line}-${index}`} className="whitespace-pre-wrap text-justify text-inherit">{line || "\u00A0"}</p>;
       })}
     </div>
   );
@@ -80,8 +80,8 @@ function HeaderSlide({ worshipDocument }: { worshipDocument: OrderOfWorshipDocum
 function StandingCrossIcon({ className }: { className?: string }) {
   return (
     <div className={className}>
-      <div className="relative inline-flex h-full w-full items-center justify-center rounded-full border border-white/30 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.26),rgba(255,255,255,0.04)_72%)] text-white shadow-[0_0_28px_rgba(255,255,255,0.62)] before:absolute before:inset-0 before:animate-pulse before:rounded-full before:border before:border-white/25 before:content-['']">
-        <Cross className="relative h-7 w-7" />
+      <div className="relative inline-flex h-full w-full items-center justify-center text-white [filter:drop-shadow(0_0_10px_rgba(255,255,255,0.9))_drop-shadow(0_0_22px_rgba(255,255,255,0.45))] animate-[pulse_1.8s_ease-in-out_infinite]">
+        <Cross strokeWidth={2.4} className="h-full w-full" />
       </div>
     </div>
   );
@@ -105,10 +105,9 @@ function ScriptureLine({ line }: { line: WorshipResponsiveLine }) {
 function SectionSlide({ section }: { section: WorshipSection }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-1 flex-col justify-center text-white">
-      {!section.stand ? <p className="text-sm uppercase tracking-[0.35em] text-[#f0d6a4]">Order of Worship</p> : null}
       <div className="mt-4 flex items-center gap-4">
         {section.stand ? (
-          <StandingCrossIcon className="h-16 w-16 shrink-0" />
+          <StandingCrossIcon className="h-14 w-14 shrink-0 md:h-16 md:w-16" />
         ) : null}
         <h1 className="text-5xl font-semibold uppercase leading-tight md:text-7xl">{section.title}</h1>
       </div>
