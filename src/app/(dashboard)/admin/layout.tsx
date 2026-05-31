@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Images, Newspaper, Users, CalendarDays, BookOpen, Settings, SlidersHorizontal, UserCog } from "lucide-react";
+import { LayoutDashboard, Images, Newspaper, Users, CalendarDays, BookOpen, Settings, SlidersHorizontal, UserCog, Presentation } from "lucide-react";
 
 import { AdminSignOutButton } from "@/components/layout/admin-signout-button";
 import { requireRole } from "@/lib/auth";
@@ -15,6 +15,7 @@ const adminNavigation = [
   { href: "/admin/posts", label: "Posts", icon: Newspaper },
   { href: "/admin/events", label: "Events", icon: CalendarDays },
   { href: "/admin/programs", label: "Programs", icon: BookOpen },
+  { href: "/admin/order-of-worship", label: "Worship", icon: Presentation },
   { href: "/admin/galleries", label: "Galleries", icon: Images },
   { href: "/admin/slides", label: "Slides", icon: SlidersHorizontal },
   { href: "/admin/users", label: "Users", icon: UserCog },

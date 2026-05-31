@@ -78,6 +78,7 @@ model User {
   events        Event[]       @relation("EventAuthor")
   programs      Program[]     @relation("ProgramAuthor")
   galleries     Gallery[]     @relation("GalleryAuthor")
+  worshipOrders OrderOfWorship[] @relation("WorshipAuthor")
   activityLogs  ActivityLog[]
 }
 
@@ -257,6 +258,23 @@ model Program {
   createdBy     User     @relation("ProgramAuthor", fields: [createdById], references: [id], onDelete: Restrict)
 
   @@index([isActive, scheduleDay])
+}
+
+model OrderOfWorship {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  worshipDate DateTime?
+  serviceTime String?
+  status      ContentStatus @default(DRAFT)
+  content     String        @db.LongText
+  createdById String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  createdBy   User          @relation("WorshipAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([status, worshipDate])
+  @@index([createdAt])
 }
 
 model ActivityLog {
