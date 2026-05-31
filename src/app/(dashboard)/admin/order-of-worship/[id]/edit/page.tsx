@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { OrderOfWorshipForm, mapOrderOfWorshipToForm } from "@/components/forms/order-of-worship-form";
+import { OrderOfWorshipForm } from "@/components/forms/order-of-worship-form";
 import { requireRole } from "@/lib/auth";
+import { mapOrderOfWorshipToForm } from "@/lib/order-of-worship-form";
 import { getOrderOfWorshipRecord } from "@/lib/order-of-worship-record";
 import { CONTENT_MANAGER_ROLES } from "@/lib/permissions";
 

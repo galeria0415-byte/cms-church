@@ -304,8 +304,11 @@ export function BibleReader() {
   const bookNum = Math.max(1, Math.min(66, Number(searchParams.get("book")) || 43));
   const bookData = BIBLE_BOOKS.find((b) => b.number === bookNum) ?? BIBLE_BOOKS[42];
   const chapterNum = Math.max(1, Math.min(bookData.chapters, Number(searchParams.get("chapter")) || 1));
+  const selectedTopicId = searchParams.get("topic");
+  const tabParam = searchParams.get("tab");
+  const verseParam = Number(searchParams.get("verse"));
 
-  const [activeTab, setActiveTab] = useState<"books" | "topics">("books");
+  const [activeTab, setActiveTab] = useState<"books" | "topics">(tabParam === "topics" ? "topics" : "books");
   const [testamentFilter, setTestamentFilter] = useState<"OT" | "NT">("NT");
   const [selectedTranslation, setSelectedTranslation] = useState("web");
   const [actualTranslation, setActualTranslation] = useState("web");
@@ -314,15 +317,65 @@ export function BibleReader() {
   const [error, setError] = useState(false);
   const [presentMode, setPresentMode] = useState(false);
   const [presentIndex, setPresentIndex] = useState(0);
-  const [selectedTopic, setSelectedTopic] = useState<TopicDef | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<TopicDef | null>(() => TOPICS.find((topic) => topic.id === selectedTopicId) ?? null);
   const [topicCards, setTopicCards] = useState<TopicCard[]>([]);
   const [topicLoading, setTopicLoading] = useState(false);
-  const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
+  const [highlightedVerse, setHighlightedVerse] = useState<number | null>(Number.isInteger(verseParam) && verseParam > 0 ? verseParam : null);
+
+  const buildBibleHref = useCallback((book: number, chapter: number, options?: {
+    tab?: "books" | "topics";
+    topicId?: string | null;
+    verse?: number | null;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const nextTab = options?.tab ?? activeTab;
+    const nextTopicId = options?.topicId !== undefined
+      ? options.topicId
+      : nextTab === "topics"
+        ? selectedTopic?.id ?? null
+        : null;
+    const nextVerse = options?.verse ?? null;
+
+    params.set("book", String(book));
+    params.set("chapter", String(chapter));
+
+    if (nextTab === "topics") {
+      params.set("tab", "topics");
+    } else {
+      params.delete("tab");
+    }
+
+    if (nextTopicId) {
+      params.set("topic", nextTopicId);
+    } else {
+      params.delete("topic");
+    }
+
+    if (nextVerse) {
+      params.set("verse", String(nextVerse));
+    } else {
+      params.delete("verse");
+    }
+
+    return `/bible?${params.toString()}`;
+  }, [activeTab, searchParams, selectedTopic?.id]);
 
   const go = useCallback(
-    (book: number, chapter: number) => router.push(`/bible?book=${book}&chapter=${chapter}`),
-    [router],
+    (book: number, chapter: number, options?: { tab?: "books" | "topics"; topicId?: string | null; verse?: number | null }) => {
+      router.push(buildBibleHref(book, chapter, options));
+    },
+    [buildBibleHref, router],
   );
+
+  useEffect(() => {
+    const nextTab = tabParam === "topics" ? "topics" : "books";
+    const nextTopic = TOPICS.find((topic) => topic.id === selectedTopicId) ?? null;
+    const nextVerse = Number.isInteger(verseParam) && verseParam > 0 ? verseParam : null;
+
+    setActiveTab((current) => current === nextTab ? current : nextTab);
+    setSelectedTopic((current) => current?.id === nextTopic?.id ? current : nextTopic);
+    setHighlightedVerse((current) => current === nextVerse ? current : nextVerse);
+  }, [selectedTopicId, tabParam, verseParam]);
 
   useEffect(() => {
     setLoading(true);
@@ -488,7 +541,10 @@ export function BibleReader() {
           {(["books", "topics"] as const).map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab);
+                router.replace(buildBibleHref(bookNum, chapterNum, { tab, topicId: tab === "topics" ? selectedTopic?.id ?? null : null, verse: null }));
+              }}
               className={`flex-1 py-3 text-sm font-medium capitalize transition ${
                 activeTab === tab
                   ? "border-b-2 border-[var(--accent)] text-[var(--accent)]"
@@ -584,7 +640,11 @@ export function BibleReader() {
                   {TOPICS.map((topic) => (
                     <button
                       key={topic.id}
-                      onClick={() => setSelectedTopic(topic)}
+                      onClick={() => {
+                        setActiveTab("topics");
+                        setSelectedTopic(topic);
+                        router.replace(buildBibleHref(bookNum, chapterNum, { tab: "topics", topicId: topic.id, verse: null }));
+                      }}
                       className={`flex flex-col items-center gap-1.5 rounded-xl p-2.5 text-center transition hover:opacity-80 ${topic.bg}`}
                     >
                       <span className="text-2xl leading-none">{topic.emoji}</span>
@@ -597,7 +657,10 @@ export function BibleReader() {
               <>
                 <div className="flex shrink-0 items-center gap-2 border-b border-[var(--line)] px-3 py-2.5">
                   <button
-                    onClick={() => setSelectedTopic(null)}
+                    onClick={() => {
+                      setSelectedTopic(null);
+                      router.replace(buildBibleHref(bookNum, chapterNum, { tab: "topics", topicId: null, verse: null }));
+                    }}
                     className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--line)] text-sm text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
                   >
                     ←
@@ -622,8 +685,7 @@ export function BibleReader() {
                         key={`${card.book}-${card.chapter}-${card.verse}`}
                         onClick={() => {
                           setHighlightedVerse(card.verse);
-                          go(card.book, card.chapter);
-                          setActiveTab("books");
+                          go(card.book, card.chapter, { tab: "topics", topicId: selectedTopic?.id ?? null, verse: card.verse });
                           setTestamentFilter(
                             BIBLE_BOOKS.find((b) => b.number === card.book)?.testament ?? "NT",
                           );

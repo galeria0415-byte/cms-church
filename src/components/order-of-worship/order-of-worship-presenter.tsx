@@ -183,36 +183,33 @@ export function OrderOfWorshipPresenter({ document: worshipDocument, title, refe
           <SlideContent slide={currentSlide} worshipDocument={worshipDocument} />
         </div>
 
-        <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setIndex((current) => Math.max(0, current - 1))} disabled={index === 0} className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/12 bg-white/8 transition hover:bg-white/14 disabled:opacity-40">
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button type="button" onClick={() => setIndex((current) => Math.min(slides.length - 1, current + 1))} disabled={index === slides.length - 1} className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/12 bg-white/8 transition hover:bg-white/14 disabled:opacity-40">
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
+        <div className="mt-8 rounded-[28px] border border-white/12 bg-black/18 px-4 py-3 backdrop-blur-md">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => setIndex((current) => Math.max(0, current - 1))} disabled={index === 0} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/8 transition hover:bg-white/14 disabled:opacity-40">
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button type="button" onClick={() => setIndex((current) => Math.min(slides.length - 1, current + 1))} disabled={index === slides.length - 1} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/8 transition hover:bg-white/14 disabled:opacity-40">
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
 
-          <div className="min-w-[280px] max-w-md rounded-[28px] border border-white/12 bg-black/20 p-4 backdrop-blur-md">
-            <p className="text-[11px] uppercase tracking-[0.26em] text-white/60">Cue Panel</p>
-            <div className="mt-3 space-y-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#f0d6a4]">Now</p>
-                <p className="mt-1 text-sm font-semibold uppercase text-white">{currentSlide.kind === "HEADER" ? "Header" : currentSlide.title}</p>
-              </div>
-              {nextSlides.length ? (
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Up next</p>
-                  <div className="mt-2 space-y-2">
-                    {nextSlides.map((slide, slideIndex) => (
-                      <button key={slide.id} type="button" onClick={() => setIndex(index + slideIndex + 1)} className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/6 px-3 py-2 text-left text-sm text-white/78 transition hover:bg-white/12">
-                        <span>{slide.kind === "HEADER" ? "Header" : slide.title}</span>
-                        <span className="text-[11px] uppercase tracking-[0.14em] text-white/45">Next</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
+            <div className="min-w-[180px] rounded-2xl border border-white/10 bg-white/6 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.22em] text-[#f0d6a4]">Now</p>
+              <p className="mt-1 truncate text-sm font-semibold uppercase text-white">{currentSlide.kind === "HEADER" ? "Header" : currentSlide.title}</p>
+            </div>
+
+            <div className="flex min-w-[260px] flex-1 items-center gap-2 overflow-x-auto pb-1">
+              <span className="shrink-0 text-[10px] uppercase tracking-[0.22em] text-white/55">Up next</span>
+              {nextSlides.length ? nextSlides.map((slide, slideIndex) => (
+                <button key={slide.id} type="button" onClick={() => setIndex(index + slideIndex + 1)} className="shrink-0 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] text-white/78 transition hover:bg-white/12">
+                  {slide.kind === "HEADER" ? "Header" : slide.title}
+                </button>
+              )) : <span className="text-xs text-white/40">No more sections</span>}
+            </div>
+
+            <div className="ml-auto rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs uppercase tracking-[0.16em] text-white/55">
+              Slide {index + 1} / {slides.length}
             </div>
           </div>
         </div>
