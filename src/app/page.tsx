@@ -33,7 +33,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-7xl px-6 pb-16 lg:px-10">
+        <section className="mx-auto mt-8 w-full max-w-7xl px-6 pb-16 lg:mt-10 lg:px-10">
           <Card>
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Latest updates</p>
             <div className="mt-6 grid gap-4 md:grid-cols-3">

@@ -19,12 +19,12 @@ function getYouTubeEmbedUrl(value: string) {
 
     if (url.hostname.includes("youtu.be")) {
       const id = url.pathname.split("/").filter(Boolean)[0];
-      return id ? `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0` : null;
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0&playsinline=1&fs=0&disablekb=1&iv_load_policy=3` : null;
     }
 
     if (url.hostname.includes("youtube.com")) {
       const id = url.searchParams.get("v");
-      return id ? `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0` : null;
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0&playsinline=1&fs=0&disablekb=1&iv_load_policy=3` : null;
     }
   } catch {
     return null;
@@ -71,15 +71,21 @@ export function HeroSlider({ slides }: { slides: SlideItem[] }) {
       {/* Media */}
       {slide.mediaType === "video" ? (
         youtubeEmbedUrl ? (
-          <iframe
-            key={slide.id}
-            src={youtubeEmbedUrl}
-            className="h-full w-full"
-            title={slide.title ?? "Homepage video slide"}
-            allow="autoplay; encrypted-media; picture-in-picture"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <iframe
+              key={slide.id}
+              src={youtubeEmbedUrl}
+              className="absolute left-1/2 top-1/2 h-[132%] w-[118%] -translate-x-1/2 -translate-y-1/2 scale-[1.02]"
+              title={slide.title ?? "Homepage video slide"}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              tabIndex={-1}
+            />
+            <div className="absolute inset-x-0 top-0 h-14 bg-[var(--ink)]/80" />
+            <div className="absolute bottom-0 left-0 h-16 w-24 bg-[var(--ink)]/82" />
+            <div className="absolute bottom-0 right-0 h-20 w-72 max-w-[32%] bg-[var(--ink)]/84" />
+          </div>
         ) : (
           <video
             key={slide.id}
