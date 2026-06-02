@@ -21,6 +21,17 @@ type SlideFormProps = {
   initialData?: Partial<SlideFormData> & { id?: string };
 };
 
+function looksLikeVideoUrl(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return normalized.includes("youtube.com/watch")
+    || normalized.includes("youtu.be/")
+    || /\.(mp4|webm|ogg|mov)(\?|#|$)/.test(normalized);
+}
+
+function looksLikeImageUrl(value: string) {
+  return /\.(jpg|jpeg|png|gif|webp|avif|svg)(\?|#|$)/i.test(value.trim());
+}
+
 export function SlideForm({ initialData }: SlideFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -40,9 +51,17 @@ export function SlideForm({ initialData }: SlideFormProps) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
+  function setMediaUrl(value: string) {
+    setForm((current) => ({
+      ...current,
+      mediaUrl: value,
+      mediaType: looksLikeVideoUrl(value) ? "video" : looksLikeImageUrl(value) ? "image" : current.mediaType,
+    }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.mediaUrl) {
+    if (!form.mediaUrl.trim()) {
       setError("Please upload or enter a media URL.");
       return;
     }
@@ -102,18 +121,20 @@ export function SlideForm({ initialData }: SlideFormProps) {
         <FileUploadField
           label={form.mediaType === "video" ? "Video file" : "Image"}
           value={form.mediaUrl}
-          onUploaded={(url) => set("mediaUrl", url)}
-          helperText={form.mediaType === "video" ? "MP4 or WebM recommended." : "JPG, PNG, or WebP recommended."}
+          onUploaded={(url) => setMediaUrl(url)}
+          helperText={form.mediaType === "video" ? "Paste a YouTube link or upload an MP4/WebM/MOV file." : "JPG, PNG, or WebP recommended."}
+          accept={form.mediaType === "video" ? "video/mp4,video/webm,video/ogg,video/quicktime" : "image/*"}
+          renderAs={form.mediaType === "video" ? "video" : "image"}
         />
 
         {/* Or enter URL manually */}
         <div>
           <label className="block text-[13px] font-medium text-[var(--ink)]">Or paste URL directly</label>
           <input
-            type="url"
+            type="text"
             value={form.mediaUrl}
-            onChange={(e) => set("mediaUrl", e.target.value)}
-            placeholder="https://..."
+            onChange={(e) => setMediaUrl(e.target.value)}
+            placeholder={form.mediaType === "video" ? "https://youtube.com/watch?v=... or /api/uploads/..." : "https://... or /api/uploads/..."}
             className="mt-1 w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
           />
         </div>

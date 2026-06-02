@@ -13,6 +13,26 @@ export type SlideItem = {
   linkLabel: string | null;
 };
 
+function getYouTubeEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+
+    if (url.hostname.includes("youtu.be")) {
+      const id = url.pathname.split("/").filter(Boolean)[0];
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0` : null;
+    }
+
+    if (url.hostname.includes("youtube.com")) {
+      const id = url.searchParams.get("v");
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0` : null;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 export function HeroSlider({ slides }: { slides: SlideItem[] }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -39,6 +59,7 @@ export function HeroSlider({ slides }: { slides: SlideItem[] }) {
   if (total === 0) return null;
 
   const slide = slides[current];
+  const youtubeEmbedUrl = slide.mediaType === "video" ? getYouTubeEmbedUrl(slide.mediaUrl) : null;
 
   return (
     <div
@@ -49,15 +70,28 @@ export function HeroSlider({ slides }: { slides: SlideItem[] }) {
     >
       {/* Media */}
       {slide.mediaType === "video" ? (
-        <video
-          key={slide.id}
-          src={slide.mediaUrl}
-          className="h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
+        youtubeEmbedUrl ? (
+          <iframe
+            key={slide.id}
+            src={youtubeEmbedUrl}
+            className="h-full w-full"
+            title={slide.title ?? "Homepage video slide"}
+            allow="autoplay; encrypted-media; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        ) : (
+          <video
+            key={slide.id}
+            src={slide.mediaUrl}
+            className="h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls={false}
+          />
+        )
       ) : (
         <img
           key={slide.id}
@@ -68,7 +102,7 @@ export function HeroSlider({ slides }: { slides: SlideItem[] }) {
       )}
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
       {/* Text overlay */}
       {(slide.title || slide.caption) && (

@@ -7,7 +7,7 @@ import { DASHBOARD_ROLES } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 
-const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp", "pdf"]);
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp", "pdf", "mp4", "webm", "ogg", "mov"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(request: Request) {
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
   if (!ALLOWED_EXTENSIONS.has(ext)) {
     return NextResponse.json(
-      { error: "File type not allowed. Accepted: jpg, jpeg, png, gif, webp, pdf." },
+      { error: "File type not allowed. Accepted: jpg, jpeg, png, gif, webp, pdf, mp4, webm, ogg, mov." },
       { status: 400 },
     );
   }

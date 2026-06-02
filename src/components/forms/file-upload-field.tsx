@@ -12,12 +12,16 @@ export function FileUploadField({
   onUploaded,
   previewMode = "banner",
   helperText,
+  accept = "image/*",
+  renderAs = "image",
 }: {
   label: string;
   value?: string;
   onUploaded: (value: string) => void;
   previewMode?: "logo" | "avatar" | "banner";
   helperText?: string;
+  accept?: string;
+  renderAs?: "image" | "video";
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -58,7 +62,11 @@ export function FileUploadField({
       <p className="text-sm font-medium text-[var(--ink)]">{label}</p>
       {value ? (
         <div className="rounded-[24px] border border-[var(--line)] bg-[var(--surface-subtle)] p-4">
-          <img src={value} alt={label} className={previewClassName} />
+          {renderAs === "video" ? (
+            <video src={value} className={previewClassName} controls playsInline />
+          ) : (
+            <img src={value} alt={label} className={previewClassName} />
+          )}
         </div>
       ) : null}
       <div className="flex flex-col gap-3">
@@ -66,7 +74,7 @@ export function FileUploadField({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={accept}
           className="hidden"
           onChange={(event) => {
             const file = event.target.files?.[0];
