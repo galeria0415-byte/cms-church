@@ -12,16 +12,24 @@ export type ObservanceItem = {
   type: ObservanceType;
 };
 
-function sameMonthDay(date: Date | null, today: Date) {
-  if (!date) {
-    return false;
-  }
+const MANILA_TIME_ZONE = "Asia/Manila";
 
-  return date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
+function getManilaMonthDay(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: MANILA_TIME_ZONE,
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(date);
+  const month = Number(parts.find((part) => part.type === "month")?.value ?? date.getMonth() + 1);
+  const day = Number(parts.find((part) => part.type === "day")?.value ?? date.getDate());
+
+  return { month, day };
 }
 
 function getNextOccurrence(date: Date, today: Date) {
-  const occurrence = new Date(today.getFullYear(), date.getMonth(), date.getDate());
+  const { month, day } = getManilaMonthDay(date);
+  const occurrence = new Date(today.getFullYear(), month - 1, day);
   if (occurrence < startOfDay(today)) {
     occurrence.setFullYear(occurrence.getFullYear() + 1);
   }

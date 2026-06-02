@@ -482,7 +482,7 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const onSubmit = handleSubmit(async (values) => {
+  const submitMember = handleSubmit(async (values) => {
     setError(null);
     const payload = {
       ...values,
@@ -587,7 +587,7 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
         <div className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">{linkLookupError}</div>
       )}
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={(event) => event.preventDefault()}>
         <Card>
           {/* ── Step 0: Personal & Contact ──────────────────────────── */}
           {currentStep === 0 && (
@@ -1297,7 +1297,7 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="button" disabled={isSubmitting} onClick={() => void submitMember()}>
               {isSubmitting ? "Saving…" : member?.id ? "Update member" : "Save member"}
             </Button>
           )}
