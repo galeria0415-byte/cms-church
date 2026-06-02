@@ -96,6 +96,9 @@ export function SiteSettingsForm({ initialSettings }: { initialSettings: SiteCon
             <Field label="Tagline">
               <Input value={settings.tagline} onChange={(event) => setSettings((current) => ({ ...current, tagline: event.target.value }))} />
             </Field>
+            <Field label="Member ID prefix">
+              <Input value={settings.memberIdPrefix} onChange={(event) => setSettings((current) => ({ ...current, memberIdPrefix: event.target.value.toUpperCase() }))} placeholder="e.g. NCUC" />
+            </Field>
             <Field label="Phone">
               <Input value={settings.phone} onChange={(event) => setSettings((current) => ({ ...current, phone: event.target.value }))} />
             </Field>
@@ -103,6 +106,7 @@ export function SiteSettingsForm({ initialSettings }: { initialSettings: SiteCon
               <Input type="email" value={settings.email} onChange={(event) => setSettings((current) => ({ ...current, email: event.target.value }))} />
             </Field>
           </div>
+          <p className="-mt-1 text-xs text-[var(--muted)]">New member records will use this pattern automatically, for example: {settings.memberIdPrefix || "MEM"}-0001.</p>
           <Field label="Description">
             <Textarea value={settings.description} onChange={(event) => setSettings((current) => ({ ...current, description: event.target.value }))} />
           </Field>

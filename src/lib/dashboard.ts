@@ -1,4 +1,4 @@
-import { endOfDay, isSameDay, startOfDay } from "date-fns";
+import { addDays, endOfDay, isSameDay, startOfDay } from "date-fns";
 
 import { prisma } from "@/lib/prisma";
 import { fullName } from "@/lib/utils";
@@ -20,12 +20,22 @@ function sameMonthDay(date: Date | null, today: Date) {
   return date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
 }
 
-export async function getTodayObservances() {
+function getNextOccurrence(date: Date, today: Date) {
+  const occurrence = new Date(today.getFullYear(), date.getMonth(), date.getDate());
+  if (occurrence < startOfDay(today)) {
+    occurrence.setFullYear(occurrence.getFullYear() + 1);
+  }
+
+  return occurrence;
+}
+
+export async function getUpcomingBirthdayObservances() {
   const today = new Date();
+  const endDate = endOfDay(addDays(today, 13));
   const members = await prisma.member.findMany({
     where: {
       isArchived: false,
-      OR: [{ birthDate: { not: null } }, { weddingDate: { not: null } }, { deceasedDate: { not: null } }],
+      birthDate: { not: null },
     },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
   });
@@ -33,35 +43,21 @@ export async function getTodayObservances() {
   const observances: ObservanceItem[] = [];
 
   for (const member of members) {
-    if (sameMonthDay(member.birthDate, today)) {
-      observances.push({
-        id: `${member.id}-birthday`,
-        memberName: fullName(member),
-        date: member.birthDate as Date,
-        type: "birthday",
-      });
-    }
+    if (member.birthDate) {
+      const nextBirthday = getNextOccurrence(member.birthDate, today);
 
-    if (sameMonthDay(member.weddingDate, today)) {
-      observances.push({
-        id: `${member.id}-wedding`,
-        memberName: fullName(member),
-        date: member.weddingDate as Date,
-        type: "wedding",
-      });
-    }
-
-    if (sameMonthDay(member.deceasedDate, today)) {
-      observances.push({
-        id: `${member.id}-memorial`,
-        memberName: fullName(member),
-        date: member.deceasedDate as Date,
-        type: "memorial",
-      });
+      if (nextBirthday >= startOfDay(today) && nextBirthday <= endDate) {
+        observances.push({
+          id: `${member.id}-birthday`,
+          memberName: fullName(member),
+          date: nextBirthday,
+          type: "birthday",
+        });
+      }
     }
   }
 
-  return observances;
+  return observances.sort((left, right) => left.date.getTime() - right.date.getTime());
 }
 
 export async function getDashboardSummary() {
@@ -71,7 +67,7 @@ export async function getDashboardSummary() {
     prisma.post.count(),
     prisma.event.count({ where: { eventDate: { gte: startOfDay(new Date()) } } }),
     prisma.program.count({ where: { isActive: true } }),
-    getTodayObservances(),
+    getUpcomingBirthdayObservances(),
   ]);
 
   return {

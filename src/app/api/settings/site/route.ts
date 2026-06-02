@@ -16,6 +16,7 @@ const siteSettingsSchema = z.object({
   phone: z.string().min(2),
   email: z.string().email(),
   logoUrl: z.string().optional().default(""),
+  memberIdPrefix: z.string().trim().min(1).max(12),
 });
 
 export async function GET() {

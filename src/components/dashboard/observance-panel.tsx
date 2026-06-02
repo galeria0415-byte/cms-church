@@ -13,14 +13,14 @@ const iconMap = {
 };
 
 const labelMap = {
-  birthday: "Birthday Today",
+  birthday: "Upcoming birthday",
   wedding: "Wedding Anniversary",
   memorial: "Death Anniversary",
 };
 
 export function ObservancePanel({ observances, title = "Today at a glance" }: { observances: ObservanceItem[]; title?: string }) {
   if (observances.length === 0) {
-    return <EmptyState title={title} message="No birthdays or anniversaries fall on today's date." />;
+    return <EmptyState title={title} message="No upcoming birthdays were found in the next two weeks." />;
   }
 
   return (

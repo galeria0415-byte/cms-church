@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireRole } from "@/lib/auth";
+import { getNextMemberId } from "@/lib/member-id";
 import { findMemberByMemberId, hydrateLinkedMemberFields, synchronizeReciprocalFamilyLinks } from "@/lib/member-links";
 import { MEMBER_MANAGER_ROLES } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -9,7 +10,44 @@ import { memberSchema } from "@/lib/validators/member";
 export async function GET(request: Request) {
   await requireRole(MEMBER_MANAGER_ROLES);
   const { searchParams } = new URL(request.url);
+  const query = searchParams.get("q")?.trim();
   const memberId = searchParams.get("memberId")?.trim();
+  const excludeMemberId = searchParams.get("excludeMemberId")?.trim();
+
+  if (query) {
+    const members = await prisma.member.findMany({
+      where: {
+        isArchived: false,
+        NOT: excludeMemberId ? { memberId: excludeMemberId } : undefined,
+        OR: [
+          { memberId: { contains: query } },
+          { firstName: { contains: query } },
+          { middleName: { contains: query } },
+          { lastName: { contains: query } },
+          { suffix: { contains: query } },
+        ],
+      },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      take: 8,
+      select: {
+        id: true,
+        memberId: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        suffix: true,
+        birthDate: true,
+        deceasedDate: true,
+      },
+    });
+
+    return NextResponse.json({
+      members: members.map((member) => ({
+        ...member,
+        displayName: `${member.firstName}${member.middleName ? ` ${member.middleName}` : ""} ${member.lastName}${member.suffix ? ` ${member.suffix}` : ""}`.trim(),
+      })),
+    });
+  }
 
   if (!memberId) {
     return NextResponse.json({ error: "Member ID is required." }, { status: 400 });
@@ -39,9 +77,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const hydratedData = await hydrateLinkedMemberFields(parsed.data);
+    const memberId = await getNextMemberId();
+    const hydratedData = await hydrateLinkedMemberFields({
+      ...parsed.data,
+      memberId,
+    });
     const member = await prisma.member.create({
-      data: hydratedData,
+      data: { ...hydratedData, memberId },
     });
 
     await synchronizeReciprocalFamilyLinks(member.id);

@@ -38,10 +38,19 @@ export async function PUT(request: Request, { params }: Params) {
   }
 
   try {
-    const hydratedData = await hydrateLinkedMemberFields(parsed.data);
+    const currentMember = await prisma.member.findUnique({ where: { id }, select: { memberId: true } });
+
+    if (!currentMember) {
+      return NextResponse.json({ error: "Member not found." }, { status: 404 });
+    }
+
+    const hydratedData = await hydrateLinkedMemberFields({
+      ...parsed.data,
+      memberId: currentMember.memberId,
+    });
     const member = await prisma.member.update({
       where: { id },
-      data: hydratedData,
+      data: { ...hydratedData, memberId: currentMember.memberId },
     });
 
     await synchronizeReciprocalFamilyLinks(member.id);

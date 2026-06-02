@@ -21,10 +21,11 @@ import {
   Upload,
   User,
   Users,
+  Search,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -97,11 +98,102 @@ const memberFormSchema = z.object({
 type MemberFormValues = z.input<typeof memberFormSchema>;
 type ExistingMember = Partial<MemberFormValues> & { id?: string };
 type LinkedMemberLookup = {
+  id?: string;
   memberId: string;
   displayName: string;
   birthDate?: string | null;
   deceasedDate?: string | null;
 };
+
+function LinkedMemberSearchField({
+  label,
+  placeholder,
+  excludeMemberId,
+  onSelect,
+}: {
+  label: string;
+  placeholder: string;
+  excludeMemberId?: string;
+  onSelect: (member: LinkedMemberLookup) => void;
+}) {
+  const listId = useId();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<LinkedMemberLookup[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const normalized = query.trim();
+
+    if (normalized.length < 2) {
+      setResults([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await fetch(`/api/members?q=${encodeURIComponent(normalized)}${excludeMemberId ? `&excludeMemberId=${encodeURIComponent(excludeMemberId)}` : ""}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const data = (await response.json()) as { members?: LinkedMemberLookup[] };
+
+        if (response.ok) {
+          setResults(data.members ?? []);
+        }
+      } catch {
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 220);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [excludeMemberId, query]);
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-[13px] font-medium text-[var(--ink)]">{label}</label>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+        <Input value={query} onChange={(event) => setQuery(event.target.value)} list={listId} placeholder={placeholder} className="pl-9" />
+        <datalist id={listId}>
+          {results.map((member) => (
+            <option key={member.memberId} value={`${member.displayName} (${member.memberId})`} />
+          ))}
+        </datalist>
+      </div>
+      {isLoading ? <p className="text-[11px] text-[var(--muted)]">Searching members...</p> : null}
+      {results.length ? (
+        <div className="max-h-44 space-y-1 overflow-y-auto rounded-lg border border-[var(--line)] bg-white p-2">
+          {results.map((member) => (
+            <button
+              key={member.memberId}
+              type="button"
+              onClick={() => {
+                onSelect(member);
+                setQuery(member.displayName);
+                setResults([]);
+              }}
+              className="flex w-full items-start justify-between rounded-md px-3 py-2 text-left transition hover:bg-[var(--sand)]"
+            >
+              <span>
+                <span className="block text-sm font-medium text-[var(--ink)]">{member.displayName}</span>
+                <span className="block text-[11px] text-[var(--muted)]">{member.memberId}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 // ── Steps ────────────────────────────────────────────────────────────────────
 
@@ -172,7 +264,7 @@ function SummarySection({ title, children }: { title: string; children: React.Re
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function MemberForm({ member }: { member?: ExistingMember }) {
+export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: ExistingMember; nextMemberId?: string; memberIdPrefix?: string }) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -207,7 +299,7 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
   } = useForm<MemberFormValues>({
     resolver: zodResolver(memberFormSchema),
     defaultValues: {
-      memberId: member?.memberId ?? "",
+      memberId: member?.memberId ?? nextMemberId ?? "",
       firstName: member?.firstName ?? "",
       middleName: member?.middleName ?? "",
       lastName: member?.lastName ?? "",
@@ -283,6 +375,28 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
     [getValues, setValue],
   );
 
+  const applyLinkedMember = useCallback((
+    linkedMember: LinkedMemberLookup,
+    fields: {
+      memberId: keyof MemberFormValues;
+      name: keyof MemberFormValues;
+      birthDate?: keyof MemberFormValues;
+      deceasedDate?: keyof MemberFormValues;
+    },
+  ) => {
+    setLinkLookupError(null);
+    setValue(fields.memberId, linkedMember.memberId);
+    setValue(fields.name, linkedMember.displayName);
+
+    if (fields.birthDate && linkedMember.birthDate) {
+      setValue(fields.birthDate, linkedMember.birthDate);
+    }
+
+    if (fields.deceasedDate && linkedMember.deceasedDate) {
+      setValue(fields.deceasedDate, linkedMember.deceasedDate);
+    }
+  }, [setValue]);
+
   const lookupLinkedMember = useCallback(async (memberId: string) => {
     const normalized = memberId.trim();
 
@@ -321,20 +435,11 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
         return;
       }
 
-      setLinkLookupError(null);
-      setValue(fields.name, linkedMember.displayName);
-
-      if (fields.birthDate && linkedMember.birthDate) {
-        setValue(fields.birthDate, linkedMember.birthDate);
-      }
-
-      if (fields.deceasedDate && linkedMember.deceasedDate) {
-        setValue(fields.deceasedDate, linkedMember.deceasedDate);
-      }
+      applyLinkedMember(linkedMember, { memberId: fields.name === "spouseName" ? "spouseMemberId" : fields.name === "fatherName" ? "fatherMemberId" : "motherMemberId", ...fields });
     } catch (lookupError) {
       setLinkLookupError(lookupError instanceof Error ? lookupError.message : "Linked member not found.");
     }
-  }, [lookupLinkedMember, setValue]);
+  }, [applyLinkedMember, lookupLinkedMember]);
 
   const linkChildMember = useCallback(async (memberId: string, index: number) => {
     if (!memberId.trim()) {
@@ -537,8 +642,8 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <Field label="Member ID" required error={errors.memberId?.message}>
-                  <Input placeholder="e.g. M-0001" {...register("memberId")} />
+                <Field label="Member ID" required error={errors.memberId?.message} hint={`Generated automatically${memberIdPrefix ? ` using the ${memberIdPrefix} prefix` : ""}.`}>
+                  <Input placeholder="Generated automatically" readOnly {...register("memberId")} />
                 </Field>
                 <Field label="First Name" required error={errors.firstName?.message} hint='If multiple: "Maria Clara" is fine.'>
                   <Input placeholder="Enter first name(s)" {...register("firstName")} />
@@ -679,6 +784,12 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
               </div>
 
               {/* Spouse */}
+              <LinkedMemberSearchField
+                label="Search spouse record"
+                placeholder="Type a spouse name or member ID"
+                excludeMemberId={values.memberId}
+                onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "spouseMemberId", name: "spouseName" })}
+              />
               <div className="grid gap-3 sm:grid-cols-3">
                 <Field label="Spouse Name">
                   <Input placeholder="Full name of spouse" {...register("spouseName")} />
@@ -699,6 +810,12 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
               {/* Father */}
               <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-subtle)] p-4 space-y-3">
                 <p className="text-[13px] font-medium text-[var(--ink)]">Father</p>
+                <LinkedMemberSearchField
+                  label="Search father's record"
+                  placeholder="Type the father's name or member ID"
+                  excludeMemberId={values.memberId}
+                  onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "fatherMemberId", name: "fatherName", birthDate: "fatherBirthDate", deceasedDate: "fatherDeceasedDate" })}
+                />
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Field label="Father's Name">
                     <Input placeholder="Full name" {...register("fatherName")} />
@@ -729,6 +846,12 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
               {/* Mother */}
               <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-subtle)] p-4 space-y-3">
                 <p className="text-[13px] font-medium text-[var(--ink)]">Mother</p>
+                <LinkedMemberSearchField
+                  label="Search mother's record"
+                  placeholder="Type the mother's name or member ID"
+                  excludeMemberId={values.memberId}
+                  onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "motherMemberId", name: "motherName", birthDate: "motherBirthDate", deceasedDate: "motherDeceasedDate" })}
+                />
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Field label="Mother's Name">
                     <Input placeholder="Full name" {...register("motherName")} />
@@ -778,6 +901,24 @@ export function MemberForm({ member }: { member?: ExistingMember }) {
                   {childEntries.map((child, index) => (
                     <div key={index} className="flex items-start gap-2 rounded-lg border border-[var(--line)] bg-white p-3">
                       <div className="grid flex-1 gap-2 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <LinkedMemberSearchField
+                            label="Search child record"
+                            placeholder="Type the child's name or member ID"
+                            excludeMemberId={values.memberId}
+                            onSelect={(linkedMember) => {
+                              setLinkLookupError(null);
+                              setChildEntries((prev) => prev.map((entry, childIndex) => childIndex === index
+                                ? {
+                                    ...entry,
+                                    memberId: linkedMember.memberId,
+                                    name: linkedMember.displayName,
+                                    birthDate: linkedMember.birthDate ?? entry.birthDate,
+                                  }
+                                : entry));
+                            }}
+                          />
+                        </div>
                         <Field label="Child's Name">
                           <Input
                             placeholder="Full name"

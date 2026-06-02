@@ -8,6 +8,7 @@ export type SiteConfig = {
   phone: string;
   email: string;
   logoUrl: string;
+  memberIdPrefix: string;
 };
 
 export const siteConfig: SiteConfig = {
@@ -21,6 +22,7 @@ export const siteConfig: SiteConfig = {
   phone: "+63 2 8123 4567",
   email: "hello@graceharbor.org",
   logoUrl: "",
+  memberIdPrefix: "MEM",
 };
 
 export const publicNavigation = [

@@ -59,7 +59,7 @@ const csvText = z.preprocess((value) => {
 });
 
 export const memberSchema = z.object({
-  memberId: z.string().trim().min(2, "Member ID is required."),
+  memberId: optionalString,
   firstName: z.string().trim().min(2, "First name is required."),
   middleName: optionalString,
   lastName: z.string().trim().min(2, "Last name is required."),

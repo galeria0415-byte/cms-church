@@ -32,7 +32,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <ObservancePanel observances={summary.observances} title="Birthdays and anniversaries today" />
+        <ObservancePanel observances={summary.observances} title="Upcoming birthdays this week and next week" />
         <Card>
           <div className="flex items-center justify-between">
             <div>

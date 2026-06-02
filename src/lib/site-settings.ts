@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { normalizeMemberIdPrefix } from "@/lib/member-id";
 import { siteConfig, type SiteConfig } from "@/lib/site";
 
 const settingsDir = path.join(process.cwd(), "data");
@@ -24,6 +25,7 @@ function normalizeSettings(value: unknown): SiteConfig {
     phone: normalizeString(input.phone) || siteConfig.phone,
     email: normalizeString(input.email) || siteConfig.email,
     logoUrl: normalizeString(input.logoUrl),
+    memberIdPrefix: normalizeMemberIdPrefix(input.memberIdPrefix as string | undefined),
   };
 }
 
