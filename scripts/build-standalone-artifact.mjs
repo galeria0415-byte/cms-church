@@ -70,6 +70,13 @@ async function main() {
   await fs.rm(artifactDir, { recursive: true, force: true });
   await copyDir(standaloneDir, artifactDir);
 
+  for (const envFileName of [".env", ".env.local", ".env.development", ".env.test"]) {
+    const envPath = path.join(artifactDir, envFileName);
+    if (await exists(envPath)) {
+      await fs.rm(envPath, { force: true });
+    }
+  }
+
   if (await exists(publicDir)) {
     await copyDir(publicDir, path.join(artifactDir, "public"));
   }

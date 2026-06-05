@@ -42,9 +42,9 @@ export async function SiteHeader() {
           </nav>
           <Link
             href={session?.user ? "/admin" : "/login"}
-            className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
+            className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
           >
-            {session?.user ? "Dashboard" : "Admin Login"}
+            {session?.user ? "Dashboard" : "Login"}
           </Link>
         </div>
       </div>
