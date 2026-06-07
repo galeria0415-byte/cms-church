@@ -9,11 +9,11 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "border-transparent bg-[linear-gradient(180deg,var(--accent),var(--accent-strong))] text-white hover:brightness-[1.04]",
+    "border-[color:color-mix(in_oklab,var(--accent)_18%,transparent)] bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)]",
   secondary:
-    "border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,250,0.96))] text-[var(--ink)] hover:bg-[var(--sand)]",
+    "border-[var(--line)] bg-white/78 text-[var(--ink)] hover:bg-white",
   ghost: "border-transparent bg-transparent text-[var(--ink)] hover:bg-[var(--sand)]",
-  danger: "border-[#8d3423] bg-[linear-gradient(180deg,#b84a34,#8d3423)] text-white hover:brightness-[1.03]",
+  danger: "border-[#efc1b7] bg-[#fff1ec] text-[#a53f2b] hover:bg-[#ffe7df]",
 };
 
 const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -32,7 +32,7 @@ export function buttonStyles({
   className?: string;
 } = {}) {
   return cn(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-full border text-sm font-semibold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_16px_34px_-24px_rgba(15,23,42,0.45)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-60",
+    "inline-flex items-center justify-center whitespace-nowrap rounded-2xl border text-sm font-semibold tracking-[0.01em] backdrop-blur-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-60",
     sizes[size],
     variants[variant],
     className,

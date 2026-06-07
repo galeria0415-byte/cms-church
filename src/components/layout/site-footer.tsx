@@ -32,7 +32,7 @@ export async function SiteFooter() {
           <p className="mt-3 text-sm text-white/80">Tuesday to Saturday, 9:00 AM to 5:00 PM</p>
           <p className="text-sm text-white/80">Sunday worship services at 9:00 AM and 5:00 PM</p>
           {settings.enableMemberRegistration ? (
-            <Link href="/register/member" className={buttonStyles({ variant: "secondary", className: "mt-4 no-underline" })}>
+            <Link href="/register/member" className={buttonStyles({ className: "mt-4 no-underline border-white/12 bg-white/10 text-white hover:bg-white/14 hover:text-white" })}>
               Member registration
             </Link>
           ) : null}

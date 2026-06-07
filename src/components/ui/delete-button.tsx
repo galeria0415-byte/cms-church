@@ -51,7 +51,7 @@ export function DeleteButton({
       type="button"
       onClick={() => void handleDelete()}
       disabled={isDeleting}
-      className={buttonStyles({ variant: "danger", size: "sm", className: "gap-1.5 border-[#f3c1c1] bg-[linear-gradient(180deg,#fff5f5,#fee2e2)] text-[#8d3423] hover:brightness-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_14px_26px_-24px_rgba(185,28,28,0.45)]" })}
+      className={buttonStyles({ variant: "danger", size: "sm", className: "gap-1.5" })}
     >
       <Trash2 className="h-3.5 w-3.5" />
       {isDeleting ? "Deleting..." : label}
