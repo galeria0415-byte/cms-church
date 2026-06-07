@@ -49,13 +49,15 @@ export function MemberRegistrationForm({ nextMemberId, memberIdPrefix }: { nextM
           <p className="mt-3 text-sm leading-7 text-[var(--muted)]">The registration form stays hidden until the correct passcode is entered.</p>
         </div>
 
-        <form className="space-y-4" onSubmit={handlePasscodeSubmit}>
+        <form className="space-y-5" onSubmit={handlePasscodeSubmit}>
           <label className="space-y-2 text-sm font-medium text-[var(--ink)]">
             <span>Registration passcode</span>
             <Input type="password" value={passcode} onChange={(event) => setPasscode(event.target.value)} required />
           </label>
           {error ? <p className="rounded-2xl bg-[#fff1ec] px-4 py-3 text-sm text-[#a53f2b]">{error}</p> : null}
-          <Button type="submit" disabled={checking}>{checking ? "Checking..." : "Continue"}</Button>
+          <div className="pt-1">
+            <Button type="submit" disabled={checking}>{checking ? "Checking..." : "Continue"}</Button>
+          </div>
         </form>
       </Card>
     );

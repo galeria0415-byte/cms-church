@@ -1,7 +1,7 @@
 "use client";
 
 import { ContentStatus } from "@prisma/client";
-import { Copy, GripVertical, Plus, Printer, Presentation, Trash2 } from "lucide-react";
+import { CircleHelp, Copy, GripVertical, Plus, Printer, Presentation, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -26,6 +26,33 @@ type FormValues = {
   status: ContentStatus;
   content: OrderOfWorshipDocument;
 };
+
+const WORSHIP_SECTION_CHRONOLOGY = [
+  "RINGING OF THE CHURCH BELL",
+  "PRELUDE/ SILENT MEDITATION",
+  "* INTROIT",
+  "* OPENING HYMN",
+  "* LIGHTING OF THE ALTAR CANDLES",
+  "* CALL TO WORSHIP",
+  "PRAYER OF APPROACH",
+  "SONG RESPONSE",
+  "CALL TO CONFESSION",
+  "PRAYER OF CONFESSION",
+  "ASSURANCE OF PARDON",
+  "* SONG RESPONSE",
+  "OUR JOYS AND CONCERNS",
+  "* FELLOWSHIP SONG",
+  "CHURCH AT PRAYER",
+  "SONG RESPONSE",
+  "SCRIPTURE READING",
+  "ANTHEM",
+  "MESSAGE",
+  "CALL TO OFFERTORY",
+  "* PRAYER OF DEDICATION",
+  "* CLOSING HYMN",
+  "* CLOSING PRAYER AND BENEDICTION",
+  "* EXTROIT",
+];
 
 function splitLines(value: string) {
   return value
@@ -368,7 +395,21 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Sections</p>
-                  <h2 className="mt-2 text-lg font-semibold text-[var(--ink)]">Drag-and-drop worship flow</h2>
+                  <div className="mt-2 flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-[var(--ink)]">Drag-and-drop worship flow</h2>
+                    <div className="group relative">
+                      <button type="button" className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--line)] bg-white text-[var(--muted)] transition hover:text-[var(--accent)]" aria-label="Show worship chronology guide">
+                        <CircleHelp className="h-4 w-4" />
+                      </button>
+                      <div className="pointer-events-none absolute left-0 top-9 z-20 hidden w-[320px] rounded-2xl border border-[var(--line)] bg-white p-4 text-left shadow-[0_18px_45px_-30px_rgba(15,23,42,0.55)] group-hover:block">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Suggested chronology</p>
+                        <ul className="mt-3 space-y-1.5 text-xs leading-5 text-[var(--ink)]">
+                          {WORSHIP_SECTION_CHRONOLOGY.map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-[var(--muted)]">Start with no sections, then add only the ones you need.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {(["TEXT", "RESPONSIVE", "HYMN", "LIST"] as WorshipSectionType[]).map((type) => (
@@ -380,6 +421,11 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
               </div>
 
               <div className="space-y-4">
+                {values.content.sections.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface-subtle)] px-5 py-6 text-sm text-[var(--muted)]">
+                    No sections added yet. Use the buttons above to start building the worship flow.
+                  </div>
+                ) : null}
                 {values.content.sections.map((section, index) => (
                   <SectionEditor
                     key={section.id}
