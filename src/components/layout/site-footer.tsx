@@ -30,11 +30,12 @@ export async function SiteFooter() {
           <p className="text-xs uppercase tracking-[0.25em] text-white/50">Office Hours</p>
           <p className="mt-3 text-sm text-white/80">Tuesday to Saturday, 9:00 AM to 5:00 PM</p>
           <p className="text-sm text-white/80">Sunday worship services at 9:00 AM and 5:00 PM</p>
-          {settings.enableMemberRegistration ? <Link href="/register/member" className="mt-4 inline-flex text-sm font-semibold text-white">Member registration</Link> : null}
+          {settings.enableMemberRegistration ? (
+            <Link href="/register/member" className="mt-4 inline-flex items-center justify-center rounded-full border border-white/18 bg-white px-4 py-2 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--sand)]">
+              Member registration
+            </Link>
+          ) : null}
         </div>
-      </div>
-      <div className="border-t border-white/10 px-6 py-4 text-center text-xs text-white/55 lg:px-10">
-        <p>Built and maintained by DMG.</p>
       </div>
     </footer>
   );

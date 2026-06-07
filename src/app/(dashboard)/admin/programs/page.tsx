@@ -15,7 +15,7 @@ export default async function ProgramsPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">CMS</p>
           <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Programs and schedules</h1>
         </div>
-        <Link href="/admin/programs/new" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/admin/programs/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold !text-white no-underline transition hover:bg-[var(--accent-strong)]">
           New program
         </Link>
       </div>

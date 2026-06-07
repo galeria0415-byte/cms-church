@@ -29,7 +29,7 @@ export default async function UsersPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Admin</p>
           <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Users</h1>
         </div>
-        <Link href="/admin/users/new" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/admin/users/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold !text-white no-underline transition hover:bg-[var(--accent-strong)]">
           New user
         </Link>
       </div>

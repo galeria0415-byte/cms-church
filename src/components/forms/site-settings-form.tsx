@@ -82,6 +82,14 @@ export function SiteSettingsForm({ initialSettings }: { initialSettings: SiteCon
             previewMode="logo"
             helperText="Use a clean PNG or SVG logo with generous whitespace."
           />
+          <FileUploadField
+            label="Site favicon"
+            value={settings.faviconUrl}
+            onUploaded={(value) => setSettings((current) => ({ ...current, faviconUrl: value }))}
+            previewMode="logo"
+            helperText="Upload a square PNG, SVG, or ICO for browser tabs and bookmarks."
+            accept="image/png,image/svg+xml,image/x-icon,image/vnd.microsoft.icon,image/*"
+          />
         </Card>
 
         <Card className="space-y-6">

@@ -18,7 +18,7 @@ export default async function SlidesPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">CMS</p>
           <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Homepage Slides</h1>
         </div>
-        <Link href="/admin/slides/new" className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/admin/slides/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold !text-white no-underline transition hover:bg-[var(--accent-strong)]">
           New slide
         </Link>
       </div>

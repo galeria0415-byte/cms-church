@@ -18,6 +18,7 @@ const siteSettingsSchema = z.object({
   phone: z.string().min(2),
   email: z.string().email(),
   logoUrl: z.string().optional().default(""),
+  faviconUrl: z.string().optional().default(""),
   memberIdPrefix: z.string().trim().min(1).max(12),
   enableMemberRegistration: z.boolean().default(false),
   memberRegistrationPasscode: z.string().trim().max(64).default(""),
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
   revalidatePath("/gallery");
   revalidatePath("/updates");
   revalidatePath("/admin");
+  revalidatePath("/", "layout");
   revalidatePath("/login");
   revalidatePath("/register/member");
 

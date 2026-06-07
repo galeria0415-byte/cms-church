@@ -22,7 +22,7 @@ export default async function OrderOfWorshipPage() {
           <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Order of Worship Maker and Presenter</h1>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--muted)]">Create service bulletins with reusable sections, then preview, print, and present them section by section during worship.</p>
         </div>
-        <Link href="/admin/order-of-worship/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/admin/order-of-worship/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold !text-white no-underline transition hover:bg-[var(--accent-strong)]">
           New order of worship
         </Link>
       </div>

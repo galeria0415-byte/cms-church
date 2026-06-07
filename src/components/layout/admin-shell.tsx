@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, CalendarDays, Images, LayoutDashboard, Menu, Newspaper, PanelLeftClose, PanelLeftOpen, Presentation, Settings, SlidersHorizontal, UserCog, Users, X } from "lucide-react";
+import { BookOpen, CalendarDays, Images, LayoutDashboard, Menu, Newspaper, Presentation, Settings, SlidersHorizontal, UserCog, Users, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
@@ -21,12 +21,12 @@ const adminNavigation = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-function SidebarContent({ collapsed = false, onNavigate, userLabel }: { collapsed?: boolean; onNavigate?: () => void; userLabel: string }) {
+function SidebarContent({ onNavigate, userLabel }: { onNavigate?: () => void; userLabel: string }) {
   const pathname = usePathname();
 
   return (
     <>
-      <nav className="mt-8 min-h-0 flex-1 space-y-2 overflow-y-auto">
+      <nav className="mt-8 min-h-0 flex-1 space-y-2 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {adminNavigation.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
@@ -36,25 +36,23 @@ function SidebarContent({ collapsed = false, onNavigate, userLabel }: { collapse
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={cn("flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition", active ? "bg-white/14 text-white" : "text-white/80 hover:bg-white/10 hover:text-white", collapsed && "justify-center px-2")}
-              title={collapsed ? item.label : undefined}
+              className={cn("flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition", active ? "bg-white/14 text-white" : "text-white/80 hover:bg-white/10 hover:text-white")}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed ? item.label : null}
+              {item.label}
             </Link>
           );
         })}
       </nav>
-      <div className={cn("shrink-0 pt-6", collapsed && "flex justify-center pt-4")}>
-          {!collapsed ? (
-            <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-              <p className="text-sm font-semibold">Signed in as</p>
-              <p className="mt-1 text-sm text-white/70">{userLabel}</p>
-            </div>
-          ) : null}
-          <div className={cn("mt-3", collapsed && "flex justify-center")}>
-            <AdminSignOutButton />
-          </div>
+      <div className="shrink-0 border-t border-white/10 pt-5">
+        <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/45">Signed in as</p>
+          <p className="mt-1 truncate text-sm font-medium text-white/82">{userLabel}</p>
+        </div>
+        <div className="mt-3">
+          <AdminSignOutButton />
+        </div>
+        <p className="mt-4 text-center text-[10px] uppercase tracking-[0.22em] text-white/38">Built and maintained by DMG.</p>
       </div>
     </>
   );
@@ -62,7 +60,6 @@ function SidebarContent({ collapsed = false, onNavigate, userLabel }: { collapse
 
 export function AdminShell({ children, logoUrl, name, role, userLabel }: { children: React.ReactNode; logoUrl: string; name: string; role: string; userLabel: string; }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -91,20 +88,15 @@ export function AdminShell({ children, logoUrl, name, role, userLabel }: { child
       </aside>
 
       <div className="mx-auto grid min-h-screen max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[auto_1fr] lg:px-8">
-        <aside className={cn("hidden flex-col rounded-[32px] border border-[var(--line)] bg-[var(--surface-strong)] p-6 text-white shadow-[0_30px_80px_-55px_rgba(15,23,42,0.9)] lg:sticky lg:top-6 lg:flex lg:h-[calc(100vh-3rem)] lg:overflow-y-auto", collapsed ? "lg:w-[92px]" : "lg:w-[260px]") }>
-          <div className={cn("flex items-center gap-4", collapsed && "justify-center") }>
+        <aside className="hidden w-[260px] flex-col rounded-[32px] border border-[var(--line)] bg-[var(--surface-strong)] p-6 text-white shadow-[0_30px_80px_-55px_rgba(15,23,42,0.9)] lg:sticky lg:top-6 lg:flex lg:h-[calc(100vh-3rem)] lg:overflow-hidden">
+          <div className="flex items-center gap-4">
             {logoUrl ? <img src={logoUrl} alt={name} className="h-11 w-11 rounded-2xl bg-white object-contain p-2" /> : null}
-            {!collapsed ? (
-              <div>
-                <p className="font-serif text-2xl tracking-[0.04em]">{name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/55">Role: {titleize(role)}</p>
-              </div>
-            ) : null}
-            <button type="button" onClick={() => setCollapsed((current) => !current)} className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/10">
-              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            </button>
+            <div>
+              <p className="font-serif text-2xl tracking-[0.04em]">{name}</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/55">Role: {titleize(role)}</p>
+            </div>
           </div>
-          <SidebarContent collapsed={collapsed} userLabel={userLabel} />
+          <SidebarContent userLabel={userLabel} />
         </aside>
         <main className="space-y-6 py-2">{children}</main>
       </div>

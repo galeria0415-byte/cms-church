@@ -54,11 +54,6 @@ export function SiteHeaderShell({
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          {enableMemberRegistration ? (
-            <Link href="/register/member" className="rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--surface-subtle)]">
-              Register
-            </Link>
-          ) : null}
           <Link href={isAuthenticated ? "/admin" : "/login"} className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]">
             {isAuthenticated ? "Dashboard" : "Login"}
           </Link>

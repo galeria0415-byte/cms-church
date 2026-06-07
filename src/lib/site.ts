@@ -8,6 +8,7 @@ export type SiteConfig = {
   phone: string;
   email: string;
   logoUrl: string;
+  faviconUrl: string;
   memberIdPrefix: string;
   enableMemberRegistration: boolean;
   memberRegistrationPasscode: string;
@@ -24,6 +25,7 @@ export const siteConfig: SiteConfig = {
   phone: "+63 2 8123 4567",
   email: "hello@graceharbor.org",
   logoUrl: "",
+  faviconUrl: "",
   memberIdPrefix: "MEM",
   enableMemberRegistration: false,
   memberRegistrationPasscode: "",

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { OrderOfWorshipDocument, WorshipHymnPart, WorshipListItem, WorshipResponsiveLine, WorshipSection, WorshipSectionType } from "@/lib/order-of-worship";
-import { convertSectionType, createDefaultOrderOfWorship, createSectionTemplate, createWorshipId, WORSHIP_SPEAKERS } from "@/lib/order-of-worship";
+import { convertSectionType, createDefaultOrderOfWorship, createSectionTemplate, createWorshipId, normalizeOrderOfWorshipDocument, WORSHIP_SPEAKERS } from "@/lib/order-of-worship";
 import { formatDateInput, toSlug } from "@/lib/utils";
 
 type FormValues = {
@@ -61,8 +61,12 @@ function splitLines(value: string) {
     .filter(Boolean);
 }
 
-function joinLines(value: string[]) {
-  return value.join("\n");
+function joinLines(value: string[] | string | undefined) {
+  if (Array.isArray(value)) {
+    return value.join("\n");
+  }
+
+  return typeof value === "string" ? value : "";
 }
 
 function buildServiceDateText(worshipDate: string, serviceTime: string, fallback = "") {
@@ -268,7 +272,7 @@ export function OrderOfWorshipForm({ initialData }: { initialData?: Partial<Form
     worshipDate: initialData?.worshipDate ?? "",
     serviceTime: initialData?.serviceTime ?? "",
     status: initialData?.status ?? ContentStatus.DRAFT,
-    content: initialData?.content ?? createDefaultOrderOfWorship(),
+    content: initialData?.content ? normalizeOrderOfWorshipDocument(initialData.content) : createDefaultOrderOfWorship(),
   });
   const resolvedServiceDateText = useMemo(
     () => buildServiceDateText(values.worshipDate, values.serviceTime, values.content.header.serviceDateText ?? ""),

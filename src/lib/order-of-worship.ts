@@ -150,7 +150,7 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
     return {
       id: createWorshipId("section"),
       type,
-      title: "Call to Worship",
+      title: "",
       stand: true,
       lines: [
         { id: createWorshipId("line"), speaker: "LITURGIST", text: "" },
@@ -163,7 +163,7 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
     return {
       id: createWorshipId("section"),
       type,
-      title: "Opening Hymn",
+      title: "",
       stand: true,
       hymnSource: "",
       songTitle: "",
@@ -177,7 +177,7 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
     return {
       id: createWorshipId("section"),
       type,
-      title: "Our Joys and Concerns",
+      title: "",
       stand: false,
       items: [{ id: createWorshipId("item"), title: "", text: "" }],
     };
@@ -186,7 +186,7 @@ export function createSectionTemplate(type: WorshipSectionType): WorshipSection 
   return {
     id: createWorshipId("section"),
     type: "TEXT",
-    title: "Prelude / Silent Meditation",
+    title: "",
     stand: false,
     body: "",
   };
@@ -437,7 +437,22 @@ function normalizeSection(value: unknown, fallbackSection?: WorshipSection): Wor
   };
 }
 
-function normalizeDocument(value: unknown): OrderOfWorshipDocument {
+function normalizeStringArray(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => asString(entry)).filter((entry) => entry.length > 0);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/\r?\n/)
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+  }
+
+  return [];
+}
+
+export function normalizeOrderOfWorshipDocument(value: unknown): OrderOfWorshipDocument {
   const fallback = createDefaultOrderOfWorship();
   const source = (value && typeof value === "object") ? value as Partial<OrderOfWorshipDocument> : {};
   const sourceHeader = (source.header && typeof source.header === "object") ? source.header as Partial<WorshipHeader> : {};
@@ -447,17 +462,13 @@ function normalizeDocument(value: unknown): OrderOfWorshipDocument {
     header: {
       leftLogoUrl: asString(sourceHeader.leftLogoUrl),
       rightLogoUrl: asString(sourceHeader.rightLogoUrl),
-      centerLines: Array.isArray(sourceHeader.centerLines)
-        ? sourceHeader.centerLines.map((line) => asString(line)).filter((line) => line.length > 0)
-        : fallback.header.centerLines,
+      centerLines: normalizeStringArray(sourceHeader.centerLines),
       monthTheme: asString(sourceHeader.monthTheme),
       orderTitle: asString(sourceHeader.orderTitle) || fallback.header.orderTitle,
       orderSubtitle: asString(sourceHeader.orderSubtitle),
       sundayTheme: asString(sourceHeader.sundayTheme),
       serviceDateText: asString(sourceHeader.serviceDateText),
-      participantLines: Array.isArray(sourceHeader.participantLines)
-        ? sourceHeader.participantLines.map((line) => asString(line)).filter((line) => line.length > 0)
-        : [],
+      participantLines: normalizeStringArray(sourceHeader.participantLines),
     },
     sections: (sourceSections.length ? sourceSections : fallback.sections).map((section, index) => normalizeSection(section, fallback.sections[index])),
   };
@@ -469,7 +480,7 @@ export function parseOrderOfWorshipDocument(value?: string | null): OrderOfWorsh
   }
 
   try {
-    return normalizeDocument(JSON.parse(value));
+    return normalizeOrderOfWorshipDocument(JSON.parse(value));
   } catch {
     return createDefaultOrderOfWorship();
   }

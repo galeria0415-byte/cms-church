@@ -22,6 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${settings.name}`,
     },
     description: settings.description,
+    icons: settings.faviconUrl
+      ? {
+          icon: [{ url: settings.faviconUrl }],
+          shortcut: [settings.faviconUrl],
+          apple: [settings.faviconUrl],
+        }
+      : undefined,
   };
 }
 

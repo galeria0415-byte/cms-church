@@ -25,6 +25,7 @@ function normalizeSettings(value: unknown): SiteConfig {
     phone: normalizeString(input.phone) || siteConfig.phone,
     email: normalizeString(input.email) || siteConfig.email,
     logoUrl: normalizeString(input.logoUrl),
+    faviconUrl: normalizeString(input.faviconUrl),
     memberIdPrefix: normalizeMemberIdPrefix(input.memberIdPrefix as string | undefined),
     enableMemberRegistration: Boolean(input.enableMemberRegistration),
     memberRegistrationPasscode: normalizeString(input.memberRegistrationPasscode),
