@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -11,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginInput } from "@/lib/validators/auth";
 
 export function LoginForm() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const {
     register,
@@ -23,20 +21,25 @@ export function LoginForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
-    const response = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-      callbackUrl: "/admin",
-    });
+    try {
+      const response = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+        callbackUrl: "/admin",
+      });
 
-    if (!response?.ok || response?.error) {
-      setError("Incorrect email or password. Please try again.");
-      return;
+      if (!response?.ok || response?.error) {
+        setError("Incorrect email or password. Please try again.");
+        return;
+      }
+
+      // Use a hard navigation so the browser sends the fresh session cookie
+      // in a new full-page request — more reliable behind reverse proxies.
+      window.location.href = response.url ?? "/admin";
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
     }
-
-    router.push("/admin");
-    router.refresh();
   });
 
   return (

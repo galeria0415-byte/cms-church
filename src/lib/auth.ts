@@ -8,12 +8,32 @@ import { prisma } from "@/lib/prisma";
 import { hasRole } from "@/lib/permissions";
 import { loginSchema } from "@/lib/validators/auth";
 
+// Explicitly override cookie names to remove __Secure-/__Host- prefixes.
+// cPanel Passenger terminates TLS before Node.js, so the browser-enforced
+// __Host- CSRF prefix can silently fail CSRF validation on external devices.
+// We keep secure:true in production for the Secure attribute without the prefix.
+const useSecure = process.env.NODE_ENV === "production";
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
   pages: {
     signIn: "/login",
+  },
+  cookies: {
+    sessionToken: {
+      name: "next-auth.session-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecure },
+    },
+    callbackUrl: {
+      name: "next-auth.callback-url",
+      options: { httpOnly: false, sameSite: "lax", path: "/", secure: useSecure },
+    },
+    csrfToken: {
+      name: "next-auth.csrf-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecure },
+    },
   },
   providers: [
     CredentialsProvider({
