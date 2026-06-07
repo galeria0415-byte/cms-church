@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export function AdminSignOutButton() {
   return (
-    <Button type="button" variant="ghost" className="w-full justify-start text-white hover:text-white" onClick={() => void signOut({ callbackUrl: "/login" })}>
+    <Button type="button" variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white" onClick={() => void signOut({ callbackUrl: "/login" })}>
       <LogOut className="mr-2 h-4 w-4" />
       Sign out
     </Button>

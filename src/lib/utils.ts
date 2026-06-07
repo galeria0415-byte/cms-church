@@ -63,3 +63,15 @@ export function titleize(value: string) {
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
 }
+
+export function toProperCase(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/(^|[\s'-])([a-z])/g, (_match, prefix: string, letter: string) => `${prefix}${letter.toUpperCase()}`);
+}

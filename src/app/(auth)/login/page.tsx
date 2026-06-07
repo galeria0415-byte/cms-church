@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { LoginForm } from "@/components/forms/login-form";
 import { Card } from "@/components/ui/card";
 import { getAuthSession } from "@/lib/auth";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export default async function LoginPage() {
-  const session = await getAuthSession();
+  const [session, settings] = await Promise.all([getAuthSession(), getSiteSettings()]);
 
   if (session?.user) {
     redirect("/admin");
@@ -21,6 +23,7 @@ export default async function LoginPage() {
         <div className="mt-8">
           <LoginForm />
         </div>
+        {settings.enableMemberRegistration ? <p className="mt-5 text-center text-sm text-[var(--muted)]">New member? <Link href="/register/member" className="font-semibold text-[var(--accent)]">Register here</Link></p> : null}
       </Card>
     </main>
   );

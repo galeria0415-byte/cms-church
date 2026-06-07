@@ -9,6 +9,8 @@ export type SiteConfig = {
   email: string;
   logoUrl: string;
   memberIdPrefix: string;
+  enableMemberRegistration: boolean;
+  memberRegistrationPasscode: string;
 };
 
 export const siteConfig: SiteConfig = {
@@ -23,6 +25,8 @@ export const siteConfig: SiteConfig = {
   email: "hello@graceharbor.org",
   logoUrl: "",
   memberIdPrefix: "MEM",
+  enableMemberRegistration: false,
+  memberRegistrationPasscode: "",
 };
 
 export const publicNavigation = [

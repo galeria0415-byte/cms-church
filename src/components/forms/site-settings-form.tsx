@@ -117,6 +117,29 @@ export function SiteSettingsForm({ initialSettings }: { initialSettings: SiteCon
 
         <Card className="space-y-6">
           <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Member registration</p>
+            <h2 className="mt-2 font-serif text-2xl text-[var(--ink)]">Public sign-up access</h2>
+          </div>
+          <label className="flex items-center gap-3 text-sm font-medium text-[var(--ink)]">
+            <input
+              type="checkbox"
+              checked={settings.enableMemberRegistration}
+              onChange={(event) => setSettings((current) => ({ ...current, enableMemberRegistration: event.target.checked }))}
+            />
+            Enable public member registration
+          </label>
+          <Field label="Registration passcode">
+            <Input
+              value={settings.memberRegistrationPasscode}
+              onChange={(event) => setSettings((current) => ({ ...current, memberRegistrationPasscode: event.target.value }))}
+              placeholder="Shared church passcode"
+            />
+          </Field>
+          <p className="text-xs leading-6 text-[var(--muted)]">Use a passcode instead of open registration so only invited members can access the sign-up form.</p>
+        </Card>
+
+        <Card className="space-y-6">
+          <div>
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Homepage</p>
             <h2 className="mt-2 font-serif text-2xl text-[var(--ink)]">Hero section</h2>
           </div>

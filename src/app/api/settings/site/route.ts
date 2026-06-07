@@ -12,11 +12,23 @@ const siteSettingsSchema = z.object({
   name: z.string().min(2),
   tagline: z.string().min(2),
   description: z.string().min(2),
+  heroHeadline: z.string().min(2),
+  heroBadge: z.string().min(2),
   address: z.string().min(2),
   phone: z.string().min(2),
   email: z.string().email(),
   logoUrl: z.string().optional().default(""),
   memberIdPrefix: z.string().trim().min(1).max(12),
+  enableMemberRegistration: z.boolean().default(false),
+  memberRegistrationPasscode: z.string().trim().max(64).default(""),
+}).superRefine((data, ctx) => {
+  if (data.enableMemberRegistration && !data.memberRegistrationPasscode) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["memberRegistrationPasscode"],
+      message: "Enter a registration passcode before enabling public member registration.",
+    });
+  }
 });
 
 export async function GET() {
@@ -45,6 +57,8 @@ export async function POST(request: Request) {
   revalidatePath("/gallery");
   revalidatePath("/updates");
   revalidatePath("/admin");
+  revalidatePath("/login");
+  revalidatePath("/register/member");
 
   return NextResponse.json({ settings });
 }

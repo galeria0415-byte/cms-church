@@ -1,10 +1,12 @@
 "use client";
 
+import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { BIBLE_BOOKS, TRANSLATION_LABELS, fetchBibleChapter } from "@/lib/bible";
 import type { BibleVerseData } from "@/lib/bible";
+import { cn } from "@/lib/utils";
 
 type VerseRef = { book: number; chapter: number; verse: number };
 type TopicDef = { id: string; name: string; emoji: string; bg: string; verses: VerseRef[] };
@@ -321,6 +323,7 @@ export function BibleReader() {
   const [topicCards, setTopicCards] = useState<TopicCard[]>([]);
   const [topicLoading, setTopicLoading] = useState(false);
   const [highlightedVerse, setHighlightedVerse] = useState<number | null>(Number.isInteger(verseParam) && verseParam > 0 ? verseParam : null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const buildBibleHref = useCallback((book: number, chapter: number, options?: {
     tab?: "books" | "topics";
@@ -399,6 +402,26 @@ export function BibleReader() {
     }, 120);
     return () => clearTimeout(timer);
   }, [verses, highlightedVerse]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 1023px)");
+
+    const syncSidebarState = (matchesMobile: boolean) => {
+      setSidebarOpen(!matchesMobile);
+    };
+
+    syncSidebarState(media.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      syncSidebarState(event.matches);
+    };
+
+    media.addEventListener("change", handleChange);
+
+    return () => {
+      media.removeEventListener("change", handleChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!selectedTopic) { setTopicCards([]); return; }
@@ -533,8 +556,10 @@ export function BibleReader() {
   return (
     <div className="flex h-full w-full overflow-hidden bg-white">
 
+      {sidebarOpen ? <div className="absolute inset-0 z-10 bg-slate-950/35 lg:hidden" onClick={() => setSidebarOpen(false)} /> : null}
+
       {/* ── Sidebar ─────────────────────────────────────────────── */}
-      <aside className="flex h-full w-[270px] min-w-[270px] flex-col border-r border-[var(--line)] bg-white">
+      <aside className={cn("absolute inset-y-0 left-0 z-20 flex h-full w-[270px] min-w-[270px] flex-col border-r border-[var(--line)] bg-white transition-transform lg:static lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full lg:flex", !sidebarOpen && "lg:hidden") }>
 
         {/* Tabs */}
         <div className="flex shrink-0 border-b border-[var(--line)]">
@@ -710,6 +735,13 @@ export function BibleReader() {
 
         {/* Nav bar */}
         <div className="flex shrink-0 items-center gap-3 border-b border-[var(--line)] bg-white px-6 py-3">
+          <button
+            onClick={() => setSidebarOpen((current) => !current)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--line)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+          >
+            {sidebarOpen ? <X className="h-4 w-4 lg:hidden" /> : <Menu className="h-4 w-4 lg:hidden" />}
+            {!sidebarOpen ? <PanelLeftOpen className="hidden h-4 w-4 lg:block" /> : <PanelLeftClose className="hidden h-4 w-4 lg:block" />}
+          </button>
           <button
             onClick={goPrev}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--line)] text-lg text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"

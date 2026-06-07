@@ -26,6 +26,8 @@ function normalizeSettings(value: unknown): SiteConfig {
     email: normalizeString(input.email) || siteConfig.email,
     logoUrl: normalizeString(input.logoUrl),
     memberIdPrefix: normalizeMemberIdPrefix(input.memberIdPrefix as string | undefined),
+    enableMemberRegistration: Boolean(input.enableMemberRegistration),
+    memberRegistrationPasscode: normalizeString(input.memberRegistrationPasscode),
   };
 }
 
