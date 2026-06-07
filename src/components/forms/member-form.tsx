@@ -264,7 +264,29 @@ function SummarySection({ title, children }: { title: string; children: React.Re
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: ExistingMember; nextMemberId?: string; memberIdPrefix?: string }) {
+export function MemberForm({
+  member,
+  nextMemberId,
+  memberIdPrefix,
+  submitEndpoint,
+  submitMethod,
+  submitLabel,
+  successRedirectPath,
+  passcode,
+  onSubmitted,
+  allowLinkedMemberLookup = true,
+}: {
+  member?: ExistingMember;
+  nextMemberId?: string;
+  memberIdPrefix?: string;
+  submitEndpoint?: string;
+  submitMethod?: "POST" | "PUT";
+  submitLabel?: string;
+  successRedirectPath?: string;
+  passcode?: string;
+  onSubmitted?: (data: { error?: string; member?: { id: string }; memberId?: string; message?: string }) => void;
+  allowLinkedMemberLookup?: boolean;
+}) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -510,23 +532,28 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
           : undefined,
     };
 
-    const response = await fetch(
-      member?.id ? `/api/members/${member.id}` : "/api/members",
-      {
-        method: member?.id ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
+    const response = await fetch(member?.id ? `/api/members/${member.id}` : submitEndpoint ?? "/api/members", {
+      method: member?.id ? "PUT" : submitMethod ?? "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...payload,
+        ...(passcode ? { passcode } : {}),
+      }),
+    });
 
-    const data = (await response.json()) as { error?: string; member?: { id: string } };
+    const data = (await response.json()) as { error?: string; member?: { id: string }; memberId?: string; message?: string };
 
-    if (!response.ok || !data.member) {
+    if (!response.ok || (!data.member && !onSubmitted)) {
       setError(data.error ?? "Something went wrong while saving the member.");
       return;
     }
 
-    router.push(`/admin/members/${data.member.id}`);
+    if (onSubmitted) {
+      onSubmitted(data);
+      return;
+    }
+
+    router.push(successRedirectPath ?? `/admin/members/${data.member!.id}`);
     router.refresh();
   });
 
@@ -784,12 +811,14 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
               </div>
 
               {/* Spouse */}
-              <LinkedMemberSearchField
-                label="Search spouse record"
-                placeholder="Type a spouse name or member ID"
-                excludeMemberId={values.memberId}
-                onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "spouseMemberId", name: "spouseName" })}
-              />
+              {allowLinkedMemberLookup ? (
+                <LinkedMemberSearchField
+                  label="Search spouse record"
+                  placeholder="Type a spouse name or member ID"
+                  excludeMemberId={values.memberId}
+                  onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "spouseMemberId", name: "spouseName" })}
+                />
+              ) : null}
               <div className="grid gap-3 sm:grid-cols-3">
                 <Field label="Spouse Name">
                   <Input placeholder="Full name of spouse" {...register("spouseName")} />
@@ -797,9 +826,9 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
                 <Field label="Spouse Member ID" hint="Link to existing member record.">
                   <Input
                     placeholder="e.g. M-0003"
-                    {...register("spouseMemberId", {
-                      onBlur: (event) => void linkSingleRelation(event.target.value, { name: "spouseName" }),
-                    })}
+                      {...register("spouseMemberId", {
+                        onBlur: allowLinkedMemberLookup ? (event) => void linkSingleRelation(event.target.value, { name: "spouseName" }) : undefined,
+                      })}
                   />
                 </Field>
                 <Field label="Wedding Date">
@@ -810,12 +839,14 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
               {/* Father */}
               <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-subtle)] p-4 space-y-3">
                 <p className="text-[13px] font-medium text-[var(--ink)]">Father</p>
-                <LinkedMemberSearchField
-                  label="Search father's record"
-                  placeholder="Type the father's name or member ID"
-                  excludeMemberId={values.memberId}
-                  onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "fatherMemberId", name: "fatherName", birthDate: "fatherBirthDate", deceasedDate: "fatherDeceasedDate" })}
-                />
+                {allowLinkedMemberLookup ? (
+                  <LinkedMemberSearchField
+                    label="Search father's record"
+                    placeholder="Type the father's name or member ID"
+                    excludeMemberId={values.memberId}
+                    onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "fatherMemberId", name: "fatherName", birthDate: "fatherBirthDate", deceasedDate: "fatherDeceasedDate" })}
+                  />
+                ) : null}
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Field label="Father's Name">
                     <Input placeholder="Full name" {...register("fatherName")} />
@@ -824,11 +855,11 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
                     <Input
                       placeholder="e.g. M-0001"
                       {...register("fatherMemberId", {
-                        onBlur: (event) => void linkSingleRelation(event.target.value, {
+                        onBlur: allowLinkedMemberLookup ? (event) => void linkSingleRelation(event.target.value, {
                           name: "fatherName",
                           birthDate: "fatherBirthDate",
                           deceasedDate: "fatherDeceasedDate",
-                        }),
+                        }) : undefined,
                       })}
                     />
                   </Field>
@@ -846,12 +877,14 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
               {/* Mother */}
               <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-subtle)] p-4 space-y-3">
                 <p className="text-[13px] font-medium text-[var(--ink)]">Mother</p>
-                <LinkedMemberSearchField
-                  label="Search mother's record"
-                  placeholder="Type the mother's name or member ID"
-                  excludeMemberId={values.memberId}
-                  onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "motherMemberId", name: "motherName", birthDate: "motherBirthDate", deceasedDate: "motherDeceasedDate" })}
-                />
+                {allowLinkedMemberLookup ? (
+                  <LinkedMemberSearchField
+                    label="Search mother's record"
+                    placeholder="Type the mother's name or member ID"
+                    excludeMemberId={values.memberId}
+                    onSelect={(linkedMember) => applyLinkedMember(linkedMember, { memberId: "motherMemberId", name: "motherName", birthDate: "motherBirthDate", deceasedDate: "motherDeceasedDate" })}
+                  />
+                ) : null}
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Field label="Mother's Name">
                     <Input placeholder="Full name" {...register("motherName")} />
@@ -860,11 +893,11 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
                     <Input
                       placeholder="e.g. M-0002"
                       {...register("motherMemberId", {
-                        onBlur: (event) => void linkSingleRelation(event.target.value, {
+                        onBlur: allowLinkedMemberLookup ? (event) => void linkSingleRelation(event.target.value, {
                           name: "motherName",
                           birthDate: "motherBirthDate",
                           deceasedDate: "motherDeceasedDate",
-                        }),
+                        }) : undefined,
                       })}
                     />
                   </Field>
@@ -902,22 +935,24 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
                     <div key={index} className="flex items-start gap-2 rounded-lg border border-[var(--line)] bg-white p-3">
                       <div className="grid flex-1 gap-2 sm:grid-cols-2">
                         <div className="sm:col-span-2">
-                          <LinkedMemberSearchField
-                            label="Search child record"
-                            placeholder="Type the child's name or member ID"
-                            excludeMemberId={values.memberId}
-                            onSelect={(linkedMember) => {
-                              setLinkLookupError(null);
-                              setChildEntries((prev) => prev.map((entry, childIndex) => childIndex === index
-                                ? {
-                                    ...entry,
-                                    memberId: linkedMember.memberId,
-                                    name: linkedMember.displayName,
-                                    birthDate: linkedMember.birthDate ?? entry.birthDate,
-                                  }
-                                : entry));
-                            }}
-                          />
+                          {allowLinkedMemberLookup ? (
+                            <LinkedMemberSearchField
+                              label="Search child record"
+                              placeholder="Type the child's name or member ID"
+                              excludeMemberId={values.memberId}
+                              onSelect={(linkedMember) => {
+                                setLinkLookupError(null);
+                                setChildEntries((prev) => prev.map((entry, childIndex) => childIndex === index
+                                  ? {
+                                      ...entry,
+                                      memberId: linkedMember.memberId,
+                                      name: linkedMember.displayName,
+                                      birthDate: linkedMember.birthDate ?? entry.birthDate,
+                                    }
+                                  : entry));
+                              }}
+                            />
+                          ) : null}
                         </div>
                         <Field label="Child's Name">
                           <Input
@@ -939,7 +974,7 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
                               updated[index] = { ...updated[index], memberId: e.target.value };
                               setChildEntries(updated);
                             }}
-                            onBlur={(event) => void linkChildMember(event.target.value, index)}
+                            onBlur={allowLinkedMemberLookup ? (event) => void linkChildMember(event.target.value, index) : undefined}
                           />
                         </Field>
                         {!child.memberId && (
@@ -1298,7 +1333,7 @@ export function MemberForm({ member, nextMemberId, memberIdPrefix }: { member?: 
             </Button>
           ) : (
             <Button type="button" disabled={isSubmitting} onClick={() => void submitMember()}>
-              {isSubmitting ? "Saving…" : member?.id ? "Update member" : "Save member"}
+              {isSubmitting ? "Saving…" : submitLabel ?? (member?.id ? "Update member" : "Save member")}
             </Button>
           )}
         </div>

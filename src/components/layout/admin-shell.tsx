@@ -45,14 +45,16 @@ function SidebarContent({ collapsed = false, onNavigate, userLabel }: { collapse
           );
         })}
       </nav>
-      <div className="shrink-0 pt-6">
-        <div className={cn("rounded-3xl border border-white/10 bg-white/8 p-4", collapsed && "px-3 text-center")}>
-          <p className="text-sm font-semibold">Signed in as</p>
-          {!collapsed ? <p className="mt-1 text-sm text-white/70">{userLabel}</p> : null}
-        </div>
-        <div className="mt-3">
-          <AdminSignOutButton />
-        </div>
+      <div className={cn("shrink-0 pt-6", collapsed && "flex justify-center pt-4")}>
+          {!collapsed ? (
+            <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
+              <p className="text-sm font-semibold">Signed in as</p>
+              <p className="mt-1 text-sm text-white/70">{userLabel}</p>
+            </div>
+          ) : null}
+          <div className={cn("mt-3", collapsed && "flex justify-center")}>
+            <AdminSignOutButton />
+          </div>
       </div>
     </>
   );

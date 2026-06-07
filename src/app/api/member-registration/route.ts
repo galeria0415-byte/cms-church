@@ -1,27 +1,47 @@
-import { CivilStatus, Gender, MembershipStatus, MembershipType, RecordStatus, ServiceAttendanceStatus } from "@prisma/client";
+import { MembershipStatus, MembershipType, RecordStatus, ServiceAttendanceStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import { getNextMemberId } from "@/lib/member-id";
+import { hydrateLinkedMemberFields, synchronizeReciprocalFamilyLinks } from "@/lib/member-links";
 import { prisma } from "@/lib/prisma";
 import { getSiteSettings } from "@/lib/site-settings";
 import { toProperCase } from "@/lib/utils";
+import { memberSchema, type MemberInput } from "@/lib/validators/member";
 
-const registrationSchema = z.object({
-  passcode: z.string().trim().min(1),
-  firstName: z.string().trim().min(2),
-  middleName: z.string().trim().optional(),
-  lastName: z.string().trim().min(2),
-  suffix: z.string().trim().optional(),
-  gender: z.nativeEnum(Gender).optional().or(z.literal("")),
-  birthDate: z.string().trim().min(1),
-  civilStatus: z.nativeEnum(CivilStatus).optional().or(z.literal("")),
-  contactNumber: z.string().trim().min(7),
-  email: z.string().trim().email(),
-  address: z.string().trim().min(6),
-  emergencyContactName: z.string().trim().optional(),
-  emergencyContactNumber: z.string().trim().optional(),
-});
+function normalizePublicMemberFields(data: MemberInput): MemberInput {
+  const normalized = { ...data };
+  const properCaseKeys = [
+    "firstName",
+    "middleName",
+    "lastName",
+    "suffix",
+    "address",
+    "emergencyContactName",
+    "spouseName",
+    "fatherName",
+    "motherName",
+    "guardian",
+    "schoolAttended",
+    "courseOrDegree",
+    "occupation",
+    "companyName",
+    "workAddress",
+    "previousChurch",
+    "shepherdingGroup",
+  ] as const;
+
+  for (const key of properCaseKeys) {
+    if (typeof normalized[key] === "string") {
+      (normalized as Record<string, unknown>)[key] = toProperCase(normalized[key]);
+    }
+  }
+
+  if (typeof normalized.email === "string") {
+    normalized.email = normalized.email.trim().toLowerCase();
+  }
+
+  return normalized;
+}
 
 export async function POST(request: Request) {
   const settings = await getSiteSettings();
@@ -31,43 +51,50 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const parsed = registrationSchema.safeParse(body);
 
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten().formErrors[0] ?? "Invalid registration data." }, { status: 400 });
+  if (typeof body?.passcode !== "string" || body.passcode !== settings.memberRegistrationPasscode) {
+    return NextResponse.json({ error: "Invalid registration passcode." }, { status: 403 });
   }
 
-  if (parsed.data.passcode !== settings.memberRegistrationPasscode) {
-    return NextResponse.json({ error: "Invalid registration passcode." }, { status: 403 });
+  if (body?.mode === "verify") {
+    return NextResponse.json({ ok: true });
+  }
+
+  const parsed = memberSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().formErrors[0] ?? "Invalid member data." }, { status: 400 });
   }
 
   const memberId = await getNextMemberId(settings.memberIdPrefix);
 
   try {
+    const normalizedInput = normalizePublicMemberFields({ ...parsed.data, memberId });
+    const hydratedData = await hydrateLinkedMemberFields({
+      ...normalizedInput,
+      memberId,
+      membershipStatus: MembershipStatus.VISITOR,
+      membershipType: parsed.data.membershipType || MembershipType.BAPTISM,
+      serviceAttendanceStatus: parsed.data.serviceAttendanceStatus || ServiceAttendanceStatus.OCCASIONAL,
+      recordStatus: RecordStatus.ACTIVE,
+      notes: parsed.data.notes || "Submitted through the public member registration page.",
+      remarks: parsed.data.remarks || "Pending admin review.",
+      isArchived: false,
+    });
+
     const member = await prisma.member.create({
       data: {
+        ...hydratedData,
         memberId,
-        firstName: toProperCase(parsed.data.firstName),
-        middleName: toProperCase(parsed.data.middleName) || undefined,
-        lastName: toProperCase(parsed.data.lastName),
-        suffix: toProperCase(parsed.data.suffix) || undefined,
-        gender: parsed.data.gender || undefined,
-        birthDate: new Date(parsed.data.birthDate),
-        civilStatus: parsed.data.civilStatus || undefined,
-        nationality: "Filipino",
-        contactNumber: parsed.data.contactNumber,
-        email: parsed.data.email.toLowerCase(),
-        address: toProperCase(parsed.data.address),
-        emergencyContactName: toProperCase(parsed.data.emergencyContactName) || undefined,
-        emergencyContactNumber: parsed.data.emergencyContactNumber || undefined,
         membershipStatus: MembershipStatus.VISITOR,
-        membershipType: MembershipType.BAPTISM,
-        serviceAttendanceStatus: ServiceAttendanceStatus.OCCASIONAL,
+        membershipType: parsed.data.membershipType || MembershipType.BAPTISM,
+        serviceAttendanceStatus: parsed.data.serviceAttendanceStatus || ServiceAttendanceStatus.OCCASIONAL,
         recordStatus: RecordStatus.ACTIVE,
-        notes: "Submitted through the public member registration page.",
-        remarks: "Pending admin review.",
+        isArchived: false,
       },
     });
+
+    await synchronizeReciprocalFamilyLinks(member.id);
 
     await prisma.activityLog.create({
       data: {
