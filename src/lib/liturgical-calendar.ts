@@ -1,7 +1,6 @@
 export type LiturgicalSeason =
   | "ADVENT"
   | "CHRISTMAS"
-  | "EPIPHANY"
   | "LENT"
   | "EASTER"
   | "PENTECOST"
@@ -16,10 +15,10 @@ export type LiturgicalTheme = {
   gradient: string[];
 };
 
-const MANILA_TIME_ZONE = "Asia/Manila";
+import { MANILA_TIME_ZONE, parseDateValue } from "@/lib/utils";
 
 function normalizeDate(value?: Date | string | null) {
-  const date = value ? new Date(value) : new Date();
+  const date = parseDateValue(value) ?? new Date();
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: MANILA_TIME_ZONE,
     year: "numeric",
@@ -76,30 +75,29 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
   const easter = getEasterSunday(year);
   const ashWednesday = addDays(easter, -46);
   const pentecost = addDays(easter, 49);
-  const christmasStart = new Date(year, 11, 25);
-  const christmasEnd = new Date(year + 1, 0, 5);
-  const epiphanyStart = new Date(year, 0, 6);
   const advent = getAdventStart(year);
+  const month = date.getMonth();
+  const day = date.getDate();
 
-  if (isBetween(date, advent, addDays(christmasStart, -1))) {
+  if (isBetween(date, advent, new Date(year, 11, 24))) {
     return {
       season: "ADVENT",
       label: "Advent",
-      accent: "#6d3fb2",
-      accentSoft: "#c9a6ff",
-      glow: "rgba(201,166,255,0.4)",
-      gradient: ["#130f2e", "#2d235b", "#5b2d91"],
+      accent: "#5f4bb6",
+      accentSoft: "#b7c7ff",
+      glow: "rgba(183,199,255,0.34)",
+      gradient: ["#12182f", "#22376d", "#5d4cb0"],
     };
   }
 
-  if (isBetween(date, christmasStart, christmasEnd)) {
+  if ((month === 11 && day >= 25) || (month === 0 && day <= 6)) {
     return {
       season: "CHRISTMAS",
       label: "Christmas",
-      accent: "#e7c66b",
-      accentSoft: "#fff1b8",
-      glow: "rgba(255,241,184,0.38)",
-      gradient: ["#1b233c", "#3e4e7a", "#967c2d"],
+      accent: "#d9b54a",
+      accentSoft: "#fff4c7",
+      glow: "rgba(255,244,199,0.38)",
+      gradient: ["#1a2036", "#756427", "#f2e7b0"],
     };
   }
 
@@ -108,9 +106,9 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
       season: "LENT",
       label: "Lent",
       accent: "#6d3fb2",
-      accentSoft: "#cbb2f7",
-      glow: "rgba(203,178,247,0.35)",
-      gradient: ["#181321", "#2f2446", "#5a3f88"],
+      accentSoft: "#d1c0fb",
+      glow: "rgba(209,192,251,0.34)",
+      gradient: ["#191324", "#34244d", "#624395"],
     };
   }
 
@@ -118,10 +116,10 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
     return {
       season: "EASTER",
       label: "Easter",
-      accent: "#e4c15e",
-      accentSoft: "#fff0b0",
-      glow: "rgba(255,240,176,0.36)",
-      gradient: ["#132238", "#214f72", "#b69535"],
+      accent: "#d7b24a",
+      accentSoft: "#fff0c2",
+      glow: "rgba(255,240,194,0.36)",
+      gradient: ["#18243a", "#6d5b26", "#f4e7b5"],
     };
   }
 
@@ -136,34 +134,23 @@ export function getLiturgicalTheme(value?: Date | string | null): LiturgicalThem
     };
   }
 
-  if (isBetween(date, epiphanyStart, addDays(ashWednesday, -1))) {
-    return {
-      season: "EPIPHANY",
-      label: "Epiphany",
-      accent: "#3e7e3d",
-      accentSoft: "#bfe6b2",
-      glow: "rgba(191,230,178,0.3)",
-      gradient: ["#0f1e17", "#1f4c39", "#356c39"],
-    };
-  }
-
   if (date > pentecost || date < advent) {
     return {
       season: "ORDINARY_TIME",
-      label: "Pentecost",
+      label: "Ordinary Time",
       accent: "#3f8c4f",
       accentSoft: "#caefc5",
       glow: "rgba(202,239,197,0.28)",
-      gradient: ["#102017", "#1f4b2c", "#325e39"],
+      gradient: ["#102017", "#1f4b2c", "#3d7649"],
     };
   }
 
   return {
     season: "ORDINARY_TIME",
-    label: "Pentecost",
+    label: "Ordinary Time",
     accent: "#3f8c4f",
     accentSoft: "#caefc5",
     glow: "rgba(202,239,197,0.28)",
-    gradient: ["#102017", "#1f4b2c", "#325e39"],
+    gradient: ["#102017", "#1f4b2c", "#3d7649"],
   };
 }

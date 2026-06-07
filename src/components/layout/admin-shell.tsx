@@ -52,7 +52,7 @@ function SidebarContent({ onNavigate, userLabel }: { onNavigate?: () => void; us
         <div className="mt-3">
           <AdminSignOutButton />
         </div>
-        <p className="mt-4 text-center text-[10px] uppercase tracking-[0.22em] text-white/38">Built and maintained by DMG.</p>
+        <p className="mt-4 text-center text-[10px] uppercase tracking-[0.22em] text-white/38">DMG {new Date().getFullYear()}</p>
       </div>
     </>
   );

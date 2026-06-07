@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonStyles } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -131,14 +132,14 @@ export function UserForm({ initialData }: UserFormProps) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          className={buttonStyles()}
         >
           {saving ? "Saving…" : isEdit ? "Save changes" : "Create user"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-full border border-[var(--line)] px-5 py-2.5 text-sm font-semibold text-[var(--ink)]"
+          className={buttonStyles({ variant: "secondary" })}
         >
           Cancel
         </button>

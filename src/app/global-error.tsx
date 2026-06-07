@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { buttonStyles } from "@/components/ui/button";
+
 // Catches errors thrown from the root layout itself
 export default function GlobalError({
   error,
@@ -27,7 +29,7 @@ export default function GlobalError({
           )}
           <button
             onClick={reset}
-            className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            className={buttonStyles({ className: "bg-[linear-gradient(180deg,#2563eb,#1d4ed8)]" })}
           >
             Try again
           </button>

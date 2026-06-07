@@ -1,6 +1,8 @@
 import { ContentStatus } from "@prisma/client";
 import { z } from "zod";
 
+import { parseDateValue } from "@/lib/utils";
+
 const optionalString = z
   .string()
   .trim()
@@ -12,7 +14,7 @@ const optionalDate = z.preprocess((value) => {
     return undefined;
   }
 
-  return new Date(String(value));
+  return parseDateValue(value) ?? undefined;
 }, z.date().optional());
 
 const imageList = z.preprocess((value) => {
@@ -45,7 +47,7 @@ export const eventSchema = z.object({
   title: z.string().trim().min(3),
   slug: z.string().trim().min(3),
   description: z.string().trim().min(10),
-  eventDate: z.preprocess((value) => new Date(String(value)), z.date()),
+  eventDate: z.preprocess((value) => parseDateValue(value) ?? value, z.date()),
   time: optionalString,
   location: optionalString,
   bannerImage: optionalString,

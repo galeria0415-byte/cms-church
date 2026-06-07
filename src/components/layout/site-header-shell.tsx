@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
+import { buttonStyles } from "@/components/ui/button";
 import { publicNavigation } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +55,7 @@ export function SiteHeaderShell({
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link href={isAuthenticated ? "/admin" : "/login"} className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]">
+          <Link href={isAuthenticated ? "/admin" : "/login"} className={buttonStyles({ className: "no-underline" })}>
             {isAuthenticated ? "Dashboard" : "Login"}
           </Link>
         </div>
@@ -77,7 +78,7 @@ export function SiteHeaderShell({
             </Link>
           ))}
           {enableMemberRegistration ? <Link href="/register/member" onClick={() => setMobileOpen(false)} className="block rounded-2xl px-4 py-3 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--surface-subtle)]">Member Registration</Link> : null}
-          <Link href={isAuthenticated ? "/admin" : "/login"} onClick={() => setMobileOpen(false)} className="block rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]">
+          <Link href={isAuthenticated ? "/admin" : "/login"} onClick={() => setMobileOpen(false)} className={buttonStyles({ className: "flex w-full no-underline" })}>
             {isAuthenticated ? "Dashboard" : "Login"}
           </Link>
         </nav>

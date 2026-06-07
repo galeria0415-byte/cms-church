@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { buttonStyles } from "@/components/ui/button";
+
 export default function Error({
   error,
   reset,
@@ -26,7 +28,7 @@ export default function Error({
         )}
         <button
           onClick={reset}
-          className="rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          className={buttonStyles()}
         >
           Try again
         </button>

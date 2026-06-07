@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import Link from "next/link";
 
+import { buttonStyles } from "@/components/ui/button";
 import { getSiteSettings } from "@/lib/site-settings";
 
 export async function SiteFooter() {
@@ -31,7 +32,7 @@ export async function SiteFooter() {
           <p className="mt-3 text-sm text-white/80">Tuesday to Saturday, 9:00 AM to 5:00 PM</p>
           <p className="text-sm text-white/80">Sunday worship services at 9:00 AM and 5:00 PM</p>
           {settings.enableMemberRegistration ? (
-            <Link href="/register/member" className="mt-4 inline-flex items-center justify-center rounded-full border border-white/18 bg-white px-4 py-2 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--sand)]">
+            <Link href="/register/member" className={buttonStyles({ variant: "secondary", className: "mt-4 no-underline" })}>
               Member registration
             </Link>
           ) : null}

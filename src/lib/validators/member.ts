@@ -8,6 +8,8 @@ import {
 } from "@prisma/client";
 import { z } from "zod";
 
+import { parseDateValue } from "@/lib/utils";
+
 const optionalString = z
   .string()
   .trim()
@@ -19,7 +21,7 @@ const optionalDate = z.preprocess((value) => {
     return undefined;
   }
 
-  return new Date(String(value));
+  return parseDateValue(value) ?? undefined;
 }, z.date().optional());
 
 const optionalNumber = z.preprocess((value) => {

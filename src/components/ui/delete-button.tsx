@@ -4,6 +4,8 @@ import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { buttonStyles } from "@/components/ui/button";
+
 interface DeleteButtonProps {
   apiPath: string;
   label?: string;
@@ -49,7 +51,7 @@ export function DeleteButton({
       type="button"
       onClick={() => void handleDelete()}
       disabled={isDeleting}
-      className="inline-flex items-center gap-1.5 rounded-full border border-[#fde8e8] bg-[#fff5f5] px-3 py-1.5 text-sm font-semibold text-[#b91c1c] transition hover:bg-[#fee2e2] disabled:opacity-50"
+      className={buttonStyles({ variant: "danger", size: "sm", className: "gap-1.5 border-[#f3c1c1] bg-[linear-gradient(180deg,#fff5f5,#fee2e2)] text-[#8d3423] hover:brightness-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_14px_26px_-24px_rgba(185,28,28,0.45)]" })}
     >
       <Trash2 className="h-3.5 w-3.5" />
       {isDeleting ? "Deleting..." : label}

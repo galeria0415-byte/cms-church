@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
 
+import { buttonStyles } from "@/components/ui/button";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -29,7 +30,7 @@ export default async function UsersPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">Admin</p>
           <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Users</h1>
         </div>
-        <Link href="/admin/users/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold !text-white no-underline transition hover:bg-[var(--accent-strong)]">
+        <Link href="/admin/users/new" className={buttonStyles({ className: "no-underline" })}>
           New user
         </Link>
       </div>

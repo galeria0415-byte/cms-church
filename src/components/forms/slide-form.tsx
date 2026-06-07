@@ -1,6 +1,7 @@
 "use client";
 
 import { FileUploadField } from "@/components/forms/file-upload-field";
+import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -219,14 +220,14 @@ export function SlideForm({ initialData }: SlideFormProps) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          className={buttonStyles()}
         >
           {saving ? "Saving…" : initialData?.id ? "Save changes" : "Create slide"}
         </button>
         <button
           type="button"
           onClick={() => router.push("/admin/slides")}
-          className="rounded-full border border-[var(--line)] px-6 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--surface-subtle)]"
+          className={buttonStyles({ variant: "secondary" })}
         >
           Cancel
         </button>

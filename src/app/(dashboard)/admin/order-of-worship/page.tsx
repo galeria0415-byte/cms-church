@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ContentStatus } from "@prisma/client";
 
+import { buttonStyles } from "@/components/ui/button";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,7 +23,7 @@ export default async function OrderOfWorshipPage() {
           <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Order of Worship Maker and Presenter</h1>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--muted)]">Create service bulletins with reusable sections, then preview, print, and present them section by section during worship.</p>
         </div>
-        <Link href="/admin/order-of-worship/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold !text-white no-underline transition hover:bg-[var(--accent-strong)]">
+        <Link href="/admin/order-of-worship/new" className={buttonStyles({ className: "no-underline" })}>
           New order of worship
         </Link>
       </div>
@@ -43,10 +44,10 @@ export default async function OrderOfWorshipPage() {
                   <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--muted)]">/{order.slug}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Link href={`/admin/order-of-worship/${order.id}`} className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Preview</Link>
-                  <Link href={`/present/order-of-worship/${order.id}`} className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Present</Link>
-                  <Link href={`/print/order-of-worship/${order.id}`} className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Print</Link>
-                  <Link href={`/admin/order-of-worship/${order.id}/edit`} className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--ink)]">Edit</Link>
+                  <Link href={`/admin/order-of-worship/${order.id}`} className={buttonStyles({ variant: "secondary", size: "sm", className: "no-underline" })}>Preview</Link>
+                  <Link href={`/present/order-of-worship/${order.id}`} className={buttonStyles({ variant: "secondary", size: "sm", className: "no-underline" })}>Present</Link>
+                  <Link href={`/print/order-of-worship/${order.id}`} className={buttonStyles({ variant: "secondary", size: "sm", className: "no-underline" })}>Print</Link>
+                  <Link href={`/admin/order-of-worship/${order.id}/edit`} className={buttonStyles({ variant: "secondary", size: "sm", className: "no-underline" })}>Edit</Link>
                   <DeleteButton apiPath={`/api/order-of-worship/${order.id}`} label="Delete" confirmMessage={`Delete order of worship \"${order.title}\"? This cannot be undone.`} />
                 </div>
               </div>

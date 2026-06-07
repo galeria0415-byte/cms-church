@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { buttonStyles } from "@/components/ui/button";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,7 +17,7 @@ export default async function EventsPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">CMS</p>
           <h1 className="mt-2 text-xl font-semibold text-[var(--ink)]">Events</h1>
         </div>
-        <Link href="/admin/events/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold !text-white no-underline transition hover:bg-[var(--accent-strong)]">
+        <Link href="/admin/events/new" className={buttonStyles({ className: "no-underline" })}>
           New event
         </Link>
       </div>

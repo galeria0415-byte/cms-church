@@ -2,6 +2,7 @@ import { ContentStatus } from "@prisma/client";
 import { z } from "zod";
 
 import { WORSHIP_SECTION_TYPES, WORSHIP_SPEAKERS } from "@/lib/order-of-worship";
+import { parseDateValue } from "@/lib/utils";
 
 const optionalString = z
   .string()
@@ -81,7 +82,7 @@ export const orderOfWorshipSchema = z.object({
       return undefined;
     }
 
-    return new Date(String(value));
+    return parseDateValue(value) ?? undefined;
   }, z.date().optional()),
   serviceTime: optionalString,
   status: z.nativeEnum(ContentStatus).default(ContentStatus.DRAFT),

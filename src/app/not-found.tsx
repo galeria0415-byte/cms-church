@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { buttonStyles } from "@/components/ui/button";
+
 export default function NotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
@@ -11,7 +13,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="inline-block rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          className={buttonStyles({ className: "no-underline" })}
         >
           Go home
         </Link>

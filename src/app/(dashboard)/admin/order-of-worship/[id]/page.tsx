@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { buttonStyles } from "@/components/ui/button";
 import { OrderOfWorshipDocumentView } from "@/components/order-of-worship/order-of-worship-document";
 import { requireRole } from "@/lib/auth";
 import { getOrderOfWorshipRecord } from "@/lib/order-of-worship-record";
@@ -10,7 +11,7 @@ import { formatDate } from "@/lib/utils";
 type Params = Promise<{ id: string }>;
 
 function ActionLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return <Link href={href} className="inline-flex items-center justify-center rounded-full border border-[var(--line)] px-4 py-2 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--sand)]">{children}</Link>;
+  return <Link href={href} className={buttonStyles({ variant: "secondary", className: "no-underline" })}>{children}</Link>;
 }
 
 export default async function OrderOfWorshipPreviewPage({ params }: { params: Params }) {
